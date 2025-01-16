@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="flex flex-col lg:flex-row">
+            <!-- Laptop Image Section -->
+            <div class="lg:w-1/2 p-6">
+                <div class="w-full h-96 mb-4">
+                    <img id="previewImage" src="{{ laptop.images.first.image.url }}" alt="{{ laptop.name }}" class="w-full h-full object-contain rounded-lg border">
+                </div>
+                <!-- Thumbnail Images -->
+                <div class="mt-4 flex space-x-4">
+                    {% for image in laptop.images.all %}
+                    <div class="w-20 h-20 border-2 border-gray-300 rounded-lg hover:border-blue-500 transition">
+                        <img src="{{ image.image.url }}" alt="Image for {{ laptop.name }}" 
+                             class="w-full h-full object-contain cursor-pointer" 
+                             onmouseover="updatePreview('{{ image.image.url }}')">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Laptop Details Section -->
+            <div class="lg:w-1/2 p-6 lg:pl-12">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ laptop.name }}</h1>
+                <p class="text-lg text-gray-600 mb-4">{{ laptop.description }}</p>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Price:</span>
+                        <span class="text-xl font-bold text-green-600">PKR {{ laptop.price }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Processor:</span>
+                        <span class="text-lg text-gray-800">{{ laptop.processor }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">RAM:</span>
+                        <span class="text-lg text-gray-800">{{ laptop.ram }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Storage:</span>
+                        <span class="text-lg text-gray-800">{{ laptop.storage }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Display:</span>
+                        <span class="text-lg text-gray-800">{{ laptop.display }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Battery:</span>
+                        <span class="text-lg text-gray-800">{{ laptop.battery }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">OS:</span>
+                        <span class="text-lg text-gray-800">{{ laptop.os }}</span>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <a href="#" class="bg-blue-600 text-white py-3 px-6 rounded-lg shadow hover:bg-blue-700 transition">Add to Cart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="mt-12">
+        <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
+        {% if reviews %}
+        <div class="space-y-6">
+            {% for review in reviews %}
+            <div class="p-6 bg-gray-100 rounded-lg shadow-md">
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold text-gray-700">{{ review.customer.user.username }}</span>
+                    <span class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</span>
+                </div>
+                <p class="mt-2 text-gray-700">{{ review.review_text }}</p>
+
+                <div class="mt-4 flex items-center">
+                    <span class="font-semibold text-gray-700">Rating:</span>
+                    <div class="flex ml-2">
+                        {% for i in rating_range %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if i <= review.rating %}yellow{% else %}gray{% endif %}" class="bi bi-star-fill" viewBox="0 0 16 16">
+                            <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z" />
+                        </svg>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">No reviews yet. Be the first to add a review!</p>
+        {% endif %}
+    </div>
+
+    <!-- Add Review Section -->
+    <div class="mt-12">
+        <h4 class="text-xl font-semibold mb-4">Add Your Review</h4>
+        <form method="post" class="space-y-4 bg-white p-6 rounded-lg shadow-md">
+            {% csrf_token %}
+            <div>
+                <label for="review-text" class="block text-lg font-semibold text-gray-700">Your Review</label>
+                <textarea name="review_text" id="review-text" rows="4" class="w-full border-gray-300 rounded-lg p-3 mt-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Write your review here..."></textarea>
+            </div>
+
+            <div>
+                <label for="rating" class="block text-lg font-semibold text-gray-700">Your Rating</label>
+                <div class="flex items-center mt-2">
+                    <span class="font-semibold text-gray-700 mr-2">Rating:</span>
+                    <div class="flex">
+                        {% for i in rating_range %}
+                        <input type="radio" name="rating" value="{{ i }}" id="rating_{{ i }}" class="hidden" {% if form.rating.value == i %}checked{% endif %} />
+                        <label for="rating_{{ i }}" class="text-lg text-gray-700 cursor-pointer mr-4" onclick="setRating({{ i }})">
+                            <span id="num_{{ i }}" class="text-lg" {% if form.rating.value == i %}style="color: yellow; font-weight: bold;"{% endif %}>{{ i }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition">Submit Review</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function updatePreview(imageUrl) {
+        const previewImage = document.getElementById('previewImage');
+        previewImage.src = imageUrl;
+    }
+</script>
+
+{% endblock %}

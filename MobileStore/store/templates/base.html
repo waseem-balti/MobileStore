@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <!-- Navbar -->
+    <header class="bg-gradient-to-r from-blue-600 via-purple-500 to-pink-600 text-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto flex justify-between items-center py-4 px-6 lg:px-12">
+            <!-- Logo -->
+            <a href="{% url 'index' %}" class="flex items-center space-x-2 text-3xl font-extrabold tracking-wide">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0L15.09 8.26H23.18L17.55 13.47L20.64 21.74L12 16.52L3.36 21.74L6.45 13.47L0.82 8.26H8.91L12 0Z" />
+                </svg>
+                <span>Mobile <span class="text-yellow-300">Store</span></span>
+            </a>
+            <!-- Links for Large Screens -->
+            <ul class="hidden lg:flex space-x-8 items-center text-lg font-medium">
+                <li><a href="{% url 'index' %}" class="hover:text-yellow-300 transition duration-300">Home</a></li>
+                <li><a href="{% url 'phones' %}" class="hover:text-yellow-300 transition duration-300">Mobiles</a></li>
+                <li><a href="{% url 'laptops' %}" class="hover:text-yellow-300 transition duration-300">Laptops</a></li>
+                <li><a href="{% url 'accessories' %}" class="hover:text-yellow-300 transition duration-300">Accessories</a></li>
+                <li><a href="#" class="hover:text-yellow-300 transition duration-300">About</a></li>
+                <li>
+                    {% if user.is_authenticated %}
+                        <a href="#" class="hover:text-yellow-300 transition duration-300">Hi, {{ user.username }}</a>
+                    {% else %}
+                        <a href="/admin/login/" class="hover:text-yellow-300 transition duration-300">Login</a>
+                    {% endif %}
+                </li>
+            </ul>
+            <!-- Mobile Menu Toggle -->
+            <button id="menuToggle" class="lg:hidden text-white focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden bg-gradient-to-b from-blue-600 via-purple-500 to-pink-600 text-white lg:hidden">
+            <ul class="space-y-4 py-4 px-6">
+                <li><a href="{% url 'index' %}" class="hover:text-yellow-300 transition duration-300">Home</a></li>
+                <li><a href="{% url 'laptops' %}" class="hover:text-yellow-300 transition duration-300">Laptops</a></li>
+                <li><a href="{% url 'accessories' %}" class="hover:text-yellow-300 transition duration-300">Accessories</a></li>
+                <li><a href="#" class="hover:text-yellow-300 transition duration-300">About</a></li>
+                <li>
+                    {% if user.is_authenticated %}
+                        <a href="#" class="block text-lg hover:text-yellow-300 transition duration-300">Hi, {{ user.username }}</a>
+                    {% else %}
+                        <a href="/admin/login/" class="block text-lg hover:text-yellow-300 transition duration-300">Login</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto py-8">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-blue-600 via-purple-500 to-pink-600 text-white py-6">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2025 Mobile Store. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>

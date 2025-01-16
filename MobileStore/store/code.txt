@@ -1,0 +1,840 @@
+File Directory Tree,
+
+├── db.sqlite3
+├── manage.py
+├── media
+│   └── mobile_phone_images
+│       ├── Pixel_4a_Barely_Blue.jpg
+│       ├── Pixel_5_Black.jpg
+│       ├── Pixel_5_Sage.png
+│       └── Pxel_4a_Black.jpg
+├── MobileStore
+│   ├── asgi.py
+│   ├── media
+│   ├── settings.py
+│   ├── static
+│   ├── urls.py
+│   ├── wsgi.py
+|
+├── static
+│   ├── Pixel 5 Black.jpg
+│   └── Pixel 5 Sage.png
+└── store
+    ├── admin.py
+    ├── apps.py
+    ├── code.txt
+    ├── forms.py
+    ├── models.py
+    ├── templates
+    │   ├── base.html
+    │   ├── index.html
+    │   └── phone_detail.html
+    ├── tests.py
+    ├── urls.py
+    ├── views.py
+
+models.py,
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils.text import slugify
+from django.core.validators import FileExtensionValidator
+
+# User roles for better management
+class Role(models.TextChoices):
+    SHOP_OWNER = "shop_owner", "Shop Owner"
+    CUSTOMER = "customer", "Customer"
+    ADMIN = "admin", "Admin"
+
+
+class ShopOwner(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="shop_owner_profile")
+    name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=15)
+    address = models.TextField()
+    store_name = models.CharField(max_length=255)
+    registration_date = models.DateTimeField(auto_now_add=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)  # Average rating for shop owner
+
+    def __str__(self):
+        return self.store_name
+
+class Customer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="customer_profile")
+    phone_number = models.CharField(max_length=15)
+    address = models.TextField()
+    wishlist = models.ManyToManyField('MobilePhone', related_name='wishlisted_by', blank=True)
+
+    def __str__(self):
+        return self.user.username
+
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True, null=True)  # Optional description for category
+
+    def __str__(self):
+        return self.name
+
+
+class MobilePhone(models.Model):
+    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="mobile_phones")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="mobile_phones")
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    
+    # New fields based on the specification page
+    # NETWORK
+    technology = models.CharField(max_length=255, blank=True, null=True)  # GSM, HSPA, LTE, 5G
+    network_bands = models.TextField(blank=True, null=True)  # 2G, 3G, 4G, 5G bands
+    
+    # LAUNCH
+    announcement_date = models.DateTimeField(blank=True, null=True)
+    status = models.CharField(max_length=255, blank=True, null=True)  # e.g., "Coming soon", "Released"
+    
+    # BODY
+    dimensions = models.CharField(max_length=255, blank=True, null=True)
+    weight = models.CharField(max_length=255, blank=True, null=True)
+    build = models.TextField(blank=True, null=True)
+    sim = models.CharField(max_length=255, blank=True, null=True)  # eSIM, Dual SIM
+    water_resistant = models.BooleanField(default=False)
+    
+    # DISPLAY
+    display_type = models.CharField(max_length=255, blank=True, null=True)
+    display_size = models.CharField(max_length=255, blank=True, null=True)
+    display_resolution = models.CharField(max_length=255, blank=True, null=True)
+    display_protection = models.CharField(max_length=255, blank=True, null=True)
+    
+    # PLATFORM
+    os = models.CharField(max_length=255, blank=True, null=True)  # Android, iOS
+    chipset = models.CharField(max_length=255, blank=True, null=True)
+    cpu = models.CharField(max_length=255, blank=True, null=True)
+    gpu = models.CharField(max_length=255, blank=True, null=True)
+    
+    # MEMORY
+    card_slot = models.CharField(max_length=255, blank=True, null=True)  # microSDXC, none
+    internal_memory = models.CharField(max_length=255, blank=True, null=True)
+    
+    # MAIN CAMERA
+    main_camera = models.TextField(blank=True, null=True)  # E.g., "50 MP, wide, etc."
+    camera_features = models.TextField(blank=True, null=True)  # E.g., "LED flash, HDR"
+    video_capabilities = models.CharField(max_length=255, blank=True, null=True)
+    
+    # SELFIE CAMERA
+    selfie_camera = models.TextField(blank=True, null=True)
+    selfie_video = models.CharField(max_length=255, blank=True, null=True)
+    
+    # SOUND
+    speaker = models.CharField(max_length=255, blank=True, null=True)
+    jack_3_5mm = models.BooleanField(default=False)
+    
+    # COMMS
+    wlan = models.CharField(max_length=255, blank=True, null=True)
+    bluetooth = models.CharField(max_length=255, blank=True, null=True)
+    positioning = models.CharField(max_length=255, blank=True, null=True)
+    nfc = models.BooleanField(default=False)
+    usb = models.CharField(max_length=255, blank=True, null=True)
+    
+    # FEATURES
+    sensors = models.TextField(blank=True, null=True)
+    
+    # BATTERY
+    battery_type = models.CharField(max_length=255, blank=True, null=True)
+    charging = models.TextField(blank=True, null=True)
+    
+    # MISC
+    colors = models.TextField(blank=True, null=True)
+    price_range = models.CharField(max_length=255, blank=True, null=True)  # Example: "About 290 EUR"
+    
+    # Existing fields
+    storage = models.CharField(max_length=255)
+    ram = models.CharField(max_length=255)
+    battery_capacity = models.CharField(max_length=255)
+    camera = models.CharField(max_length=255)
+    display = models.CharField(max_length=255)
+    os = models.CharField(max_length=255)
+    sim = models.CharField(max_length=255)
+    pta_approved = models.BooleanField(default=False)
+    five_g_supported = models.BooleanField(default=False)
+    fingerprint = models.BooleanField(default=False)
+    wifi = models.BooleanField(default=True)
+    bluetooth = models.BooleanField(default=True)
+    usb_type_c = models.BooleanField(default=True)
+    fast_charging = models.BooleanField(default=False)
+    fast_wireless_charging = models.BooleanField(default=False)
+    reverse_wireless_charging = models.BooleanField(default=False)
+    is_available = models.BooleanField(default=True)
+    views = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} - {self.shop_owner.store_name}"
+
+# Seller reviews to rate shops
+class SellerReview(models.Model):
+    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="seller_reviews")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="seller_reviews")
+    review_text = models.TextField()
+    rating = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.customer.user.username} for {self.shop_owner.store_name}"
+
+# Order model to manage customer purchases
+class Order(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders")
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, choices=[
+        ("processing", "Processing"),
+        ("shipped", "Shipped"),
+        ("delivered", "Delivered"),
+        ("cancelled", "Cancelled"),
+    ], default="processing")
+
+    def __str__(self):
+        return f"Order {self.id} by {self.customer.user.username}"
+
+# Order Items model for line items in an order
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Item: {self.mobile_phone.name} in Order {self.order.id}"
+
+# Notifications for system alerts
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}"
+
+
+class Image(models.Model):
+    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(
+        upload_to="mobile_phone_images/",
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])]  # Enforcing image extensions
+    )
+    is_featured = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Image for {self.mobile_phone.name}"
+
+
+class Review(models.Model):
+    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="reviews")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="reviews")
+    review_text = models.TextField()
+    rating = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.customer.user.username} for {self.mobile_phone.name}"
+
+class Transaction(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="transactions")
+    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.SET_NULL, null=True, related_name="transactions")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_date = models.DateTimeField(auto_now_add=True)
+    payment_method = models.CharField(max_length=255, choices=[
+        ("credit_card", "Credit Card"),
+        ("debit_card", "Debit Card"),
+        ("cash", "Cash"),
+        ("bank_transfer", "Bank Transfer")
+    ])
+    status = models.CharField(max_length=50, choices=[
+        ("completed", "Completed"),
+        ("pending", "Pending"),
+        ("cancelled", "Cancelled")
+    ], default="pending")
+
+    def __str__(self):
+        return f"Transaction by {self.customer.user.username} for {self.mobile_phone.name}"
+
+class Advertisement(models.Model):
+    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="advertisements")
+    mobile_phone = models.OneToOneField(MobilePhone, on_delete=models.CASCADE, related_name="advertisement")
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    priority = models.IntegerField(default=0)  # Higher priority ads can appear at the top
+
+    def __str__(self):
+        return f"Ad for {self.mobile_phone.name} by {self.shop_owner.store_name}"
+
+class Inquiry(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="inquiries")
+    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="inquiries")
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Inquiry by {self.customer.user.username} for {self.mobile_phone.name}"
+    
+
+
+class Tablet(models.Model):
+    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="tablets")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="tablets")
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    
+    # Tablet-specific fields
+    screen_size = models.CharField(max_length=255, blank=True, null=True)
+    operating_system = models.CharField(max_length=255, blank=True, null=True)
+    storage = models.CharField(max_length=255)
+    ram = models.CharField(max_length=255)
+    battery_capacity = models.CharField(max_length=255)
+    camera = models.CharField(max_length=255)
+    sim_support = models.CharField(max_length=255, blank=True, null=True)
+    
+    # Common specifications (can be shared with MobilePhone model)
+    display = models.CharField(max_length=255)
+    os = models.CharField(max_length=255)
+    wifi = models.BooleanField(default=True)
+    bluetooth = models.BooleanField(default=True)
+    usb_type_c = models.BooleanField(default=True)
+    is_available = models.BooleanField(default=True)
+    views = models.PositiveIntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} - {self.shop_owner.store_name}"
+
+
+
+class Accessory(models.Model):
+    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="accessories")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="accessories")
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    
+    # Accessory-specific fields
+    type = models.CharField(max_length=255, blank=True, null=True)  # E.g., "Case", "Screen Protector", "Charger"
+    compatibility = models.CharField(max_length=255, blank=True, null=True)  # E.g., "For iPhone", "Universal"
+    
+    # Common specifications (can be shared with MobilePhone model)
+    is_available = models.BooleanField(default=True)
+    views = models.PositiveIntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} - {self.shop_owner.store_name}"
+
+
+
+class Laptop(models.Model):
+    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="laptops")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="laptops")
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    
+    # Laptop-specific fields
+    screen_size = models.CharField(max_length=255, blank=True, null=True)
+    operating_system = models.CharField(max_length=255, blank=True, null=True)
+    storage = models.CharField(max_length=255)
+    ram = models.CharField(max_length=255)
+    processor = models.CharField(max_length=255)
+    graphics_card = models.CharField(max_length=255, blank=True, null=True)
+    battery_life = models.CharField(max_length=255)
+    
+    # Common specifications (can be shared with MobilePhone model)
+    display = models.CharField(max_length=255)
+    os = models.CharField(max_length=255)
+    wifi = models.BooleanField(default=True)
+    bluetooth = models.BooleanField(default=True)
+    usb_type_c = models.BooleanField(default=True)
+    is_available = models.BooleanField(default=True)
+    views = models.PositiveIntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} - {self.shop_owner.store_name}"
+
+
+views.py,
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
+from .models import MobilePhone, Review, Advertisement, Image
+from .forms import ReviewForm, InquiryForm
+
+def index(request):
+    phones = MobilePhone.objects.filter(is_available=True)
+    ads = Advertisement.objects.filter(
+        is_active=True, 
+        start_date__lte=timezone.now(), 
+        end_date__gte=timezone.now()
+    ).order_by('-priority')
+    
+    return render(request, 'index.html', {
+        'phones': phones, 
+        'ads': ads
+    })
+
+def phone_detail(request, slug):
+    phone = get_object_or_404(MobilePhone, slug=slug)
+    reviews = phone.reviews.all()
+    images = phone.images.all()  # Get all images associated with the phone
+    advertisements = Advertisement.objects.filter(mobile_phone=phone, is_active=True)
+
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.customer = request.user.customer_profile
+            review.mobile_phone = phone
+            review.save()
+            return redirect('phone_detail', slug=slug)
+    else:
+        form = ReviewForm()
+
+    rating_range = range(1, 6)
+    
+    return render(request, 'phone_detail.html', {
+        'phone': phone, 
+        'reviews': reviews, 
+        'form': form,
+        'rating_range': rating_range,
+        'images': images,  # Pass images to template
+        'advertisements': advertisements  # Pass advertisements to template
+    })
+
+
+urls.py,
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.index, name='index'),
+    path('phone/<slug:slug>/', views.phone_detail, name='phone_detail'),
+]
+
+
+templates,
+base.html,
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <!-- Navbar -->
+    <header class="bg-gradient-to-r from-blue-600 via-purple-500 to-pink-600 text-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto flex justify-between items-center py-4 px-6 lg:px-12">
+            <!-- Logo -->
+            <a href="{% url 'index' %}" class="flex items-center space-x-2 text-3xl font-extrabold tracking-wide">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0L15.09 8.26H23.18L17.55 13.47L20.64 21.74L12 16.52L3.36 21.74L6.45 13.47L0.82 8.26H8.91L12 0Z" />
+                </svg>
+                <span>Mobile <span class="text-yellow-300">Store</span></span>
+            </a>
+            <!-- Links for Large Screens -->
+            <ul class="hidden lg:flex space-x-8 items-center text-lg font-medium">
+                <li><a href="{% url 'index' %}" class="hover:text-yellow-300 transition duration-300">Home</a></li>
+                <li><a href="#" class="hover:text-yellow-300 transition duration-300">About</a></li>
+                <li><a href="#" class="hover:text-yellow-300 transition duration-300">Contact</a></li>
+                <li>
+                    {% if user.is_authenticated %}
+                        <a href="#" class="hover:text-yellow-300 transition duration-300">Hi, {{ user.username }}</a>
+                    {% else %}
+                        <a href="/admin/login/" class="hover:text-yellow-300 transition duration-300">Login</a>
+                    {% endif %}
+                </li>
+            </ul>
+            <!-- Mobile Menu Toggle -->
+            <button id="menuToggle" class="lg:hidden text-white focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden bg-gradient-to-b from-blue-600 via-purple-500 to-pink-600 text-white lg:hidden">
+            <ul class="space-y-4 py-4 px-6">
+                <li><a href="{% url 'index' %}" class="block text-lg hover:text-yellow-300 transition duration-300">Home</a></li>
+                <li><a href="#" class="block text-lg hover:text-yellow-300 transition duration-300">About</a></li>
+                <li><a href="#" class="block text-lg hover:text-yellow-300 transition duration-300">Contact</a></li>
+                <li>
+                    {% if user.is_authenticated %}
+                        <a href="#" class="block text-lg hover:text-yellow-300 transition duration-300">Hi, {{ user.username }}</a>
+                    {% else %}
+                        <a href="/admin/login/" class="block text-lg hover:text-yellow-300 transition duration-300">Login</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto py-8">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-blue-600 via-purple-500 to-pink-600 text-white py-6">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2025 Mobile Store. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
+
+index.html,
+{% extends 'base.html' %}
+{% load static %}  <!-- Add this line to load the static tag -->
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-blue-600 text-white text-center py-20">
+    <h1 class="text-4xl font-bold mb-4">Welcome to Our Mobile Store</h1>
+    <p class="text-lg mb-6">Explore the best phones at unbeatable prices. Find your perfect device now!</p>
+    <a href="#phones" class="bg-white text-blue-600 py-3 px-6 rounded-lg text-xl hover:bg-gray-100 transition-colors duration-300">Shop Now</a>
+</section>
+
+<!-- Featured Ads Section -->
+{% if ads %}
+  <div class="ads-section mb-12">
+    <h2 class="text-3xl font-bold mb-4 text-center text-blue-600">Featured Advertisements</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for ad in ads %}
+        <div class="ad-card bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+          <img src="{{ ad.mobile_phone.images.first.image.url }}" alt="{{ ad.mobile_phone.name }}" class="w-full h-60 object-contain bg-gray-100">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold mb-2">{{ ad.mobile_phone.name }}</h3>
+            <p class="text-gray-600 mb-1">{{ ad.shop_owner.store_name }}</p>
+            <p class="font-bold text-lg text-blue-600">PKR {{ ad.mobile_phone.price }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% else %}
+  <p class="text-center text-gray-500">No active advertisements available at the moment.</p>
+{% endif %}
+
+<!-- Featured Phones Section -->
+<section id="phones" class="mb-12">
+    <h2 class="text-3xl font-bold mb-6 text-center">Our Featured Phones</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for phone in phones %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            <!-- Check if images exist, then display the first one -->
+            {% if phone.images.first %}
+                <img src="{{ phone.images.first.image.url }}" alt="{{ phone.name }}" class="w-full h-60 object-contain bg-gray-100">
+            {% else %}
+                <img src="{% static 'default_image.jpg' %}" alt="Default Image" class="w-full h-60 object-contain bg-gray-100">
+            {% endif %}
+            <div class="p-4">
+                <h3 class="text-xl font-bold mb-2">{{ phone.name }}</h3>
+                <p class="text-gray-600 mb-4">{{ phone.description|truncatewords:10 }}</p>
+                <p class="font-bold text-lg text-blue-600 mb-4">PKR {{ phone.price }}</p>
+                <a href="{% url 'phone_detail' phone.slug %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Top Categories Section -->
+<section class="bg-gray-50 py-12">
+    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Top Categories</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
+            <img src="{% static 'category_smartphones.jpg' %}" alt="Smartphones" class="w-full h-40 object-cover rounded-lg mb-4">
+            <h3 class="text-xl font-semibold mb-2">Smartphones</h3>
+            <p class="text-gray-600">Explore the latest smartphones from top brands.</p>
+        </div>
+        <div class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
+            <img src="{% static 'category_tablets.jpg' %}" alt="Tablets" class="w-full h-40 object-cover rounded-lg mb-4">
+            <h3 class="text-xl font-semibold mb-2">Tablets</h3>
+            <p class="text-gray-600">Find your next tablet for work or entertainment.</p>
+        </div>
+        <div class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
+            <img src="{% static 'category_accessories.jpg' %}" alt="Accessories" class="w-full h-40 object-cover rounded-lg mb-4">
+            <h3 class="text-xl font-semibold mb-2">Accessories</h3>
+            <p class="text-gray-600">Shop for cases, chargers, and other accessories.</p>
+        </div>
+        <div class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
+            <img src="{% static 'category_laptops.jpg' %}" alt="Laptops" class="w-full h-40 object-cover rounded-lg mb-4">
+            <h3 class="text-xl font-semibold mb-2">Laptops</h3>
+            <p class="text-gray-600">Browse our range of laptops for every need.</p>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="bg-white py-12">
+    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Frequently Asked Questions</h2>
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-800">What is the return policy?</h3>
+            <p class="text-gray-600">We offer a 30-day return policy on all phones. For more details, check our Return & Refund page.</p>
+        </div>
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-800">Do you offer warranty on phones?</h3>
+            <p class="text-gray-600">Yes, all our phones come with a 1-year warranty for defects or hardware issues.</p>
+        </div>
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-800">How can I track my order?</h3>
+            <p class="text-gray-600">Once your order is shipped, you will receive a tracking number via email.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Signup Section -->
+<section class="bg-blue-600 text-white text-center py-12">
+    <h2 class="text-3xl font-bold mb-4">Stay Updated!</h2>
+    <p class="text-lg mb-6">Subscribe to our newsletter for the latest updates, offers, and more!</p>
+    <form action="#" method="POST" class="max-w-md mx-auto">
+        <input type="email" placeholder="Enter your email" class="py-3 px-6 rounded-lg text-gray-700 w-2/3 mb-4" required>
+        <button type="submit" class="bg-white text-blue-600 py-3 px-6 rounded-lg text-xl hover:bg-gray-100 transition-colors duration-300">Subscribe</button>
+    </form>
+</section>
+
+<!-- Store Locations Section -->
+<section class="bg-gray-50 py-12">
+    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Visit Our Stores</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="store-card bg-white rounded-lg shadow-lg p-6 text-center">
+            <h3 class="text-xl font-semibold mb-2">Islamabad Store</h3>
+            <p class="text-gray-600">123 Main Street, Islamabad</p>
+            <p class="text-gray-500">Open: Mon-Sat, 10 AM - 7 PM</p>
+        </div>
+        <div class="store-card bg-white rounded-lg shadow-lg p-6 text-center">
+            <h3 class="text-xl font-semibold mb-2">Lahore Store</h3>
+            <p class="text-gray-600">456 Liberty Market, Lahore</p>
+            <p class="text-gray-500">Open: Mon-Sat, 10 AM - 7 PM</p>
+        </div>
+        <div class="store-card bg-white rounded-lg shadow-lg p-6 text-center">
+            <h3 class="text-xl font-semibold mb-2">Karachi Store</h3>
+            <p class="text-gray-600">789 Karachi Plaza, Karachi</p>
+            <p class="text-gray-500">Open: Mon-Sat, 10 AM - 7 PM</p>
+        </div>
+    </div>
+</section>
+
+<!-- Social Media Section -->
+<section class="bg-blue-600 text-white text-center py-12">
+    <h2 class="text-3xl font-bold mb-4">Follow Us</h2>
+    <p class="text-lg mb-6">Stay connected for the latest updates and promotions!</p>
+    <div class="flex justify-center gap-6">
+        <a href="#" class="text-2xl hover:text-gray-200"><i class="fab fa-facebook"></i></a>
+        <a href="#" class="text-2xl hover:text-gray-200"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="text-2xl hover:text-gray-200"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="text-2xl hover:text-gray-200"><i class="fab fa-youtube"></i></a>
+    </div>
+</section>
+
+{% endblock %}
+
+phone_detail.html,
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="flex flex-col lg:flex-row">
+            <!-- Phone Image Section -->
+            <div class="lg:w-1/2 p-6">
+                <!-- Main Preview Image -->
+                <div class="w-full h-96 mb-4">
+                    <img id="previewImage" src="{{ phone.images.first.image.url }}" alt="{{ phone.name }}" class="w-full h-full object-contain rounded-lg border">
+                </div>
+
+                <!-- Thumbnail Images -->
+                <div class="mt-4 flex space-x-4">
+                    {% for image in images %}
+                    <div class="w-20 h-20 border-2 border-gray-300 rounded-lg hover:border-blue-500 transition">
+                        <img src="{{ image.image.url }}" alt="Image for {{ phone.name }}" class="w-full h-full object-contain cursor-pointer" onmouseover="updatePreview('{{ image.image.url }}')">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Phone Details Section -->
+            <div class="lg:w-1/2 p-6 lg:pl-12">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ phone.name }}</h1>
+                <p class="text-lg text-gray-600 mb-4">{{ phone.description }}</p>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Price:</span>
+                        <span class="text-xl font-bold text-green-600">PKR {{ phone.price }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Storage:</span>
+                        <span class="text-lg text-gray-800">{{ phone.storage }} GB</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">RAM:</span>
+                        <span class="text-lg text-gray-800">{{ phone.ram }} GB</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Battery:</span>
+                        <span class="text-lg text-gray-800">{{ phone.battery_capacity }} mAh</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">PTA Approved:</span>
+                        <span class="text-lg text-gray-800">{{ phone.pta_approved|yesno:"Yes,No" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">5G Supported:</span>
+                        <span class="text-lg text-gray-800">{{ phone.five_g_supported|yesno:"Yes,No" }}</span>
+                    </div>
+                    <!-- Additional Attributes -->
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Chipset:</span>
+                        <span class="text-lg text-gray-800">{{ phone.chipset }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Camera:</span>
+                        <span class="text-lg text-gray-800">{{ phone.camera }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">Display:</span>
+                        <span class="text-lg text-gray-800">{{ phone.display }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">OS:</span>
+                        <span class="text-lg text-gray-800">{{ phone.os }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-700">SIM:</span>
+                        <span class="text-lg text-gray-800">{{ phone.sim }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a href="#" class="bg-green-600 text-white py-3 px-6 rounded-lg shadow hover:bg-green-700 transition">Add to Cart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="mt-12">
+        <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
+        {% if reviews %}
+        <div class="space-y-6">
+            {% for review in reviews %}
+            <div class="p-6 bg-gray-100 rounded-lg shadow-md">
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold text-gray-700">{{ review.customer.user.username }}</span>
+                    <span class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</span>
+                </div>
+                <p class="mt-2 text-gray-700">{{ review.review_text }}</p>
+
+                <div class="mt-4 flex items-center">
+                    <span class="font-semibold text-gray-700">Rating:</span>
+                    <div class="flex ml-2">
+                        {% for i in rating_range %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if i <= review.rating %}yellow{% else %}gray{% endif %}" class="bi bi-star-fill" viewBox="0 0 16 16">
+                            <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z" />
+                        </svg>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">No reviews yet. Be the first to add a review!</p>
+        {% endif %}
+    </div>
+
+    <!-- JavaScript to Handle Image Hover Preview -->
+    <script>
+        function updatePreview(imageUrl) {
+            const previewImage = document.getElementById('previewImage');
+            previewImage.src = imageUrl;
+        }
+    </script>
+</div>
+
+    <!-- Add Review Section -->
+    <div class="mt-12">
+        <h4 class="text-xl font-semibold mb-4">Add Your Review</h4>
+        <form method="post" class="space-y-4 bg-white p-6 rounded-lg shadow-md">
+            {% csrf_token %}
+            <div>
+                <label for="review-text" class="block text-lg font-semibold text-gray-700">Your Review</label>
+                <textarea name="review_text" id="review-text" rows="4" class="w-full border-gray-300 rounded-lg p-3 mt-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Write your review here..."></textarea>
+            </div>
+
+            <div>
+                <label for="rating" class="block text-lg font-semibold text-gray-700">Your Rating</label>
+                <div class="flex items-center mt-2">
+                    <span class="font-semibold text-gray-700 mr-2">Rating:</span>
+                    <div class="flex">
+                        {% for i in rating_range %}
+                        <input type="radio" name="rating" value="{{ i }}" id="rating_{{ i }}" class="hidden" {% if form.rating.value == i %}checked{% endif %} />
+                        <label for="rating_{{ i }}" class="text-lg text-gray-700 cursor-pointer mr-4" onclick="setRating({{ i }})">
+                            <span id="num_{{ i }}" class="text-lg" {% if form.rating.value == i %}style="color: yellow; font-weight: bold;"{% endif %}>{{ i }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition">Submit Review</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
