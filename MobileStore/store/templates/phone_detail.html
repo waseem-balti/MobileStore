@@ -2,187 +2,208 @@
 
 {% block content %}
 <div class="container mx-auto p-6">
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Main Product Card -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transition-shadow hover:shadow-2xl">
         <div class="flex flex-col lg:flex-row">
-            <!-- Phone Image Section -->
-            <div class="lg:w-1/2 p-6 relative group">
-                <!-- Main Preview Image -->
-                <div class="w-full h-96 mb-4 relative">
-                    <img id="previewImage" src="{{ phone.images.first.image.url }}" alt="{{ phone.name }}" class="w-full h-full object-contain rounded-lg border">
-                    <!-- Canvas for Zoom -->
-                    <canvas id="zoomCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
+            <!-- Image Gallery Section -->
+            <div class="lg:w-1/2 p-8 bg-gray-50">
+                <div class="relative w-full h-[500px] mb-6">
+                    <img id="previewImage" src="{{ phone.images.first.image.url }}" 
+                         alt="{{ phone.name }}" 
+                         class="w-full h-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-105">
+                    <canvas id="zoomCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none rounded-xl"></canvas>
                 </div>
-
-                <!-- Thumbnail Images -->
-                <div class="mt-4 flex space-x-4">
+                <!-- Thumbnail Gallery -->
+                <div class="mt-6 grid grid-cols-4 gap-4">
                     {% for image in images %}
-                    <div class="w-20 h-20 border-2 border-gray-300 rounded-lg hover:border-blue-500 transition">
-                        <img src="{{ image.image.url }}" alt="Image for {{ phone.name }}" class="w-full h-full object-contain cursor-pointer" onmouseover="updatePreview('{{ image.image.url }}')">
+                    <div class="aspect-square overflow-hidden rounded-lg border-2 border-gray-200 hover:border-indigo-500 transition-all duration-300 transform hover:scale-105">
+                        <img src="{{ image.image.url }}" 
+                             alt="Image for {{ phone.name }}" 
+                             class="w-full h-full object-contain cursor-pointer" 
+                             onmouseover="updatePreview('{{ image.image.url }}')">
                     </div>
                     {% endfor %}
                 </div>
             </div>
 
-            <!-- Phone Details Section -->
-            <div class="lg:w-1/2 p-6 lg:pl-12">
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ phone.name }}</h1>
-                <p class="text-lg text-gray-600 mb-4">{{ phone.description }}</p>
-
-                <div class="space-y-3">
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Price:</span>
-                        <span class="text-xl font-bold text-green-600">PKR {{ phone.price }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Storage:</span>
-                        <span class="text-lg text-gray-800">{{ phone.storage }} GB</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">RAM:</span>
-                        <span class="text-lg text-gray-800">{{ phone.ram }} GB</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Battery:</span>
-                        <span class="text-lg text-gray-800">{{ phone.battery_capacity }} mAh</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">PTA Approved:</span>
-                        <span class="text-lg text-gray-800">{{ phone.pta_approved|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">5G Supported:</span>
-                        <span class="text-lg text-gray-800">{{ phone.five_g_supported|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Chipset:</span>
-                        <span class="text-lg text-gray-800">{{ phone.chipset }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Camera:</span>
-                        <span class="text-lg text-gray-800">{{ phone.camera }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Display:</span>
-                        <span class="text-lg text-gray-800">{{ phone.display }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">OS:</span>
-                        <span class="text-lg text-gray-800">{{ phone.os }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">SIM:</span>
-                        <span class="text-lg text-gray-800">{{ phone.sim }}</span>
+            <!-- Product Details Section -->
+            <div class="lg:w-1/2 p-8 lg:pl-12 flex flex-col">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4 leading-tight">{{ phone.name }}</h1>
+                <p class="text-lg text-gray-600 mb-8 leading-relaxed">{{ phone.description }}</p>
+                
+                <!-- Price Tag -->
+                <div class="bg-green-50 p-4 rounded-xl mb-8">
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-semibold text-gray-700">Price</span>
+                        <span class="text-3xl font-bold text-green-600">PKR {{ phone.price }}</span>
                     </div>
                 </div>
 
-                <div class="mt-6">
-                    <a href="#" class="bg-green-600 text-white py-3 px-6 rounded-lg shadow hover:bg-green-700 transition">Add to Cart</a>
+                <!-- Specifications Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Storage</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.storage }} GB</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">RAM</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.ram }} GB</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Battery</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.battery_capacity }} mAh</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Chipset</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.chipset }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Camera</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.camera }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Display</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.display }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Operating System</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.os }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">SIM</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.sim }}</p>
+                    </div>
                 </div>
+
+                <!-- Features Badges -->
+                <div class="flex flex-wrap gap-4 mb-8">
+                    <div class="px-4 py-2 rounded-full {% if phone.pta_approved %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} font-medium">
+                        PTA {% if phone.pta_approved %}Approved{% else %}Not Approved{% endif %}
+                    </div>
+                    <div class="px-4 py-2 rounded-full {% if phone.five_g_supported %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %} font-medium">
+                        {% if phone.five_g_supported %}5G Supported{% else %}4G{% endif %}
+                    </div>
+                </div>
+
+                <!-- Add to Cart Button -->
+                <button class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+                    Add to Cart
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Reviews Section -->
-    <div class="mt-12">
-        <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
+    <div class="mt-16">
+        <h3 class="text-3xl font-bold mb-8 text-gray-900">Customer Reviews</h3>
         {% if reviews %}
-        <div class="space-y-6">
+        <div class="grid gap-6">
             {% for review in reviews %}
-            <div class="p-6 bg-gray-100 rounded-lg shadow-md">
-                <div class="flex justify-between items-center">
-                    <span class="font-semibold text-gray-700">{{ review.customer.user.username }}</span>
-                    <span class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</span>
-                </div>
-                <p class="mt-2 text-gray-700">{{ review.review_text }}</p>
-                <div class="mt-4 flex items-center">
-                    <span class="font-semibold text-gray-700">Rating:</span>
-                    <div class="flex ml-2">
+            <div class="bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <span class="text-xl font-bold text-green-600">{{ review.customer.user.username|make_list|first }}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">{{ review.customer.user.username }}</h4>
+                            <p class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</p>
+                        </div>
+                    </div>
+                    <div class="flex">
                         {% for i in rating_range %}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if i <= review.rating %}yellow{% else %}gray{% endif %}" class="bi bi-star-fill" viewBox="0 0 16 16">
-                            <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if i <= review.rating %}#FCD34D{% else %}#E5E7EB{% endif %}" 
+                             class="mr-1" viewBox="0 0 16 16">
+                            <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z"/>
                         </svg>
                         {% endfor %}
                     </div>
                 </div>
+                <p class="text-gray-700 leading-relaxed">{{ review.review_text }}</p>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-gray-500">No reviews yet. Be the first to add a review!</p>
+        <div class="bg-gray-50 rounded-xl p-8 text-center">
+            <p class="text-gray-600 text-lg">No reviews yet. Be the first to share your experience!</p>
+        </div>
         {% endif %}
     </div>
-    <!-- Add Review Section -->
-   <div class="mt-12">
-    <h4 class="text-xl font-semibold mb-4">Add Your Review</h4>
-    <form method="post" class="space-y-4 bg-white p-6 rounded-lg shadow-md">
-        {% csrf_token %}
-        <div>
-            <label for="review-text" class="block text-lg font-semibold text-gray-700">Your Review</label>
-            <textarea name="review_text" id="review-text" rows="4" class="w-full border-gray-300 rounded-lg p-3 mt-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Write your review here..."></textarea>
-        </div>
 
-        <div>
-            <label for="rating" class="block text-lg font-semibold text-gray-700">Your Rating</label>
-            <div class="flex items-center mt-2">
-                <span class="font-semibold text-gray-700 mr-2">Rating:</span>
-                <div class="flex">
-                    {% for i in rating_range %}
-                    <input type="radio" name="rating" value="{{ i }}" id="rating_{{ i }}" class="hidden" {% if form.rating.value == i %}checked{% endif %} />
-                    <label for="rating_{{ i }}" class="text-lg text-gray-700 cursor-pointer mr-4" onclick="setRating({{ i }})">
-                        <span id="num_{{ i }}" class="text-lg" {% if form.rating.value == i %}style="color: yellow; font-weight: bold;"{% endif %}>{{ i }}</span>
-                    </label>
-                    {% endfor %}
+    <!-- Add Review Form -->
+    <div class="mt-16 mb-8">
+        <h4 class="text-2xl font-bold mb-6 text-gray-900">Write a Review</h4>
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div>
+                    <label for="rating" class="block text-lg font-medium text-gray-700 mb-4">Rating</label>
+                    <div class="flex space-x-4">
+                        {% for i in rating_range %}
+                        <label class="relative">
+                            <input type="radio" name="rating" value="{{ i }}" class="hidden peer" {% if form.rating.value == i %}checked{% endif %}>
+                            <div class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-gray-200 cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50">
+                                <span class="text-xl font-semibold text-gray-700 peer-checked:text-green-600">{{ i }}</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <button type="submit" class="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition">Submit Review</button>
-    </form>
-</div>
+                <div>
+                    <label for="review-text" class="block text-lg font-medium text-gray-700 mb-2">Your Review</label>
+                    <textarea name="review_text" id="review-text" rows="4" 
+                              class="w-full border-2 border-gray-200 rounded-xl p-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                              placeholder="Share your experience with this product..."></textarea>
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+                    Submit Review
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
     function updatePreview(imageUrl) {
         const previewImage = document.getElementById('previewImage');
         previewImage.src = imageUrl;
+        
+        // Add fade effect
+        previewImage.style.opacity = '0';
+        setTimeout(() => {
+            previewImage.style.opacity = '1';
+        }, 100);
     }
+
+    // Initialize preview image transition
+    const previewImage = document.getElementById('previewImage');
+    previewImage.style.transition = 'all 0.3s ease-in-out';
+
+    // Zoom functionality
+    const zoomCanvas = document.getElementById('zoomCanvas');
+    const ctx = zoomCanvas.getContext('2d');
+
+    previewImage.addEventListener('mousemove', (e) => {
+        const rect = previewImage.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const zoomFactor = 2;
+        const width = previewImage.width * zoomFactor;
+        const height = previewImage.height * zoomFactor;
+        const zoomX = (x / previewImage.width) * width - zoomCanvas.width / 2;
+        const zoomY = (y / previewImage.height) * height - zoomCanvas.height / 2;
+
+        ctx.clearRect(0, 0, zoomCanvas.width, zoomCanvas.height);
+        ctx.drawImage(previewImage, zoomX, zoomY, width, height, 0, 0, zoomCanvas.width, zoomCanvas.height);
+    });
+
+    previewImage.onload = function() {
+        zoomCanvas.width = previewImage.width;
+        zoomCanvas.height = previewImage.height;
+    };
 </script>
-
-    <!-- JavaScript for Image Hover and Zoom Effect -->
-    <script>
-        function updatePreview(imageUrl) {
-            const previewImage = document.getElementById('previewImage');
-            previewImage.src = imageUrl;
-        }
-
-        // Function to handle the zoom effect
-        const previewImage = document.getElementById('previewImage');
-        const zoomCanvas = document.getElementById('zoomCanvas');
-        const ctx = zoomCanvas.getContext('2d');
-
-        previewImage.addEventListener('mousemove', (e) => {
-            const rect = previewImage.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const zoomFactor = 2; // Adjust zoom factor here
-            const width = previewImage.width * zoomFactor;
-            const height = previewImage.height * zoomFactor;
-            const zoomX = (x / previewImage.width) * width - zoomCanvas.width / 2;
-            const zoomY = (y / previewImage.height) * height - zoomCanvas.height / 2;
-
-            // Clear previous canvas drawing
-            ctx.clearRect(0, 0, zoomCanvas.width, zoomCanvas.height);
-
-            // Draw zoomed image on the canvas
-            ctx.drawImage(previewImage, zoomX, zoomY, width, height, 0, 0, zoomCanvas.width, zoomCanvas.height);
-        });
-
-        // Set canvas size to match the preview image size
-        previewImage.onload = function() {
-            zoomCanvas.width = previewImage.width;
-            zoomCanvas.height = previewImage.height;
-        };
-    </script>
-</div>
 {% endblock %}

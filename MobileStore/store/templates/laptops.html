@@ -2,22 +2,25 @@
 {% load static %}
 {% block content %}
 <section class="mb-12">
-    <h2 class="text-3xl font-bold mb-6 text-center">Available Laptops</h2>
+    <h2 class="text-3xl font-bold mb-6 text-center text-gray-900">Available Laptops</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for laptop in laptops %}
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            <!-- Check if images exist, then display the first one -->
             {% if laptop.images.first %}
-                <img src="{{ laptop.images.first.image.url }}" alt="{{ laptop.name }}" class="w-full h-60 object-contain bg-gray-100">
+                <img src="{{ laptop.images.first.image.url }}" alt="{{ laptop.name }}" class="w-full h-60 object-contain bg-gray-100 transition-transform duration-300 hover:scale-105">
             {% else %}
-                <img src="{% static 'default_image.jpg' %}" alt="Default Image" class="w-full h-60 object-contain bg-gray-100">
+                <img src="{% static 'default_image.jpg' %}" alt="Default Image" class="w-full h-60 object-contain bg-gray-100 transition-transform duration-300 hover:scale-105">
             {% endif %}
-            <div class="p-4">
-                <h3 class="text-xl font-bold mb-2">{{ laptop.name }}</h3>
+            <div class="p-6">
+                <h3 class="text-2xl font-semibold text-gray-900 mb-2">{{ laptop.name }}</h3>
                 <p class="text-gray-600 mb-4">{{ laptop.description|truncatewords:10 }}</p>
-                <p class="font-bold text-lg text-blue-600 mb-4">PKR {{ laptop.price }}</p>
-                <a href="{% url 'laptop_detail' laptop.slug %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300">
-                    View Details
-                </a>
+                <div class="flex justify-between items-center">
+                    <p class="font-bold text-lg text-indigo-600">PKR {{ laptop.price }}</p>
+                    <a href="{% url 'laptop_detail' laptop.slug %}" class="bg-indigo-600 text-white py-2 px-4 rounded-xl hover:bg-indigo-700 transition-colors duration-300">
+                        View Details
+                    </a>
+                </div>
             </div>
         </div>
         {% endfor %}

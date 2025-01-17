@@ -5,6 +5,39 @@ from .forms import ReviewForm, InquiryForm, MobilePhoneForm, OrderForm, SellerRe
 from django.http import HttpResponse
 
 
+def product_detail(request, model, slug, template_name):
+    product = get_object_or_404(model, slug=slug)
+    reviews = product.reviews.all()
+    images = product.images.all()
+    advertisements = Advertisement.objects.filter(
+        is_active=True,
+        **{f"{model.__name__.lower()}": product}
+    )
+
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            if request.user.is_authenticated:
+                review.user = request.user
+                setattr(review, model.__name__.lower(), product)
+                review.save()
+                return redirect(request.path_info)
+            else:
+                return redirect('login')
+    else:
+        form = ReviewForm()
+
+    return render(request, template_name, {
+        'product': product,
+        'reviews': reviews,
+        'form': form,
+        'images': images,
+        'advertisements': advertisements,
+        'rating_range': range(1, 6),
+    })
+
+
 def index(request):
     phones = MobilePhone.objects.filter(is_available=True)
     ads = Advertisement.objects.filter(
@@ -22,71 +55,14 @@ def index(request):
         'accessories': accessories
     })
 
-def phone_detail(request, slug):
-    phone = get_object_or_404(MobilePhone, slug=slug)
-    reviews = phone.reviews.all()
-    images = phone.images.all()  # Get all images associated with the phone
-    advertisements = Advertisement.objects.filter(mobile_phone=phone, is_active=True)
-
-    if request.method == 'POST':
-        form = ReviewForm(request.POST)
-        if form.is_valid():
-            review = form.save(commit=False)
-            review.customer = request.user.customer_profile
-            review.mobile_phone = phone
-            review.save()
-            return redirect('phone_detail', slug=slug)
-    else:
-        form = ReviewForm()
-
-    rating_range = range(1, 6)
-    
-    return render(request, 'phone_detail.html', {
-        'phone': phone, 
-        'reviews': reviews, 
-        'form': form,
-        'rating_range': rating_range,
-        'images': images,  # Pass images to template
-        'advertisements': advertisements  # Pass advertisements to template
-    })
-
-
 
 def laptops(request):
     laptops = Laptop.objects.filter(is_available=True)
     return render(request, 'laptops.html', {'laptops': laptops})
 
-def laptop_detail(request, slug):
-    laptop = get_object_or_404(Laptop, slug=slug)  # Assuming you have a 'slug' field in your Laptop model
-    reviews = laptop.reviews.all()  # Assuming there's a related name for reviews in the Laptop model
-    rating_range = [1, 2, 3, 4, 5]
-
-    return render(request, 'laptop_detail.html', {
-        'laptop': laptop,
-        'reviews': reviews,
-        'rating_range': rating_range,
-    })
-
 def accessories(request):
     accessories = Accessory.objects.filter(is_available=True)
     return render(request, 'accessories.html', {'accessories': accessories})
-
-
-def accessory_detail(request, slug):
-    accessory = get_object_or_404(Accessory, slug=slug)
-    reviews = Review.objects.filter(accessory=accessory)  # Corrected to filter by accessory
-    mobile_phone = accessory.mobile_phone  # Accessory belongs to mobile_phone
-    accessories = mobile_phone.accessories.all()  # This will work because of 'related_name'
-
-    rating_range = [1, 2, 3, 4, 5]  # For star ratings
-
-    return render(request, 'accessory_detail.html', {
-        'accessories': accessories,
-        'accessory': accessory,
-        'reviews': reviews,
-        'rating_range': rating_range,
-    })
-
 
 
 def submit_review(request, laptop_id):
@@ -128,7 +104,7 @@ def seller_review(request, shop_owner_id):
         form = SellerReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
-            review.customer = request.user.customer_profile
+            review.user = request.user
             review.shop_owner = shop_owner
             review.save()
             return redirect('shop_owner_detail', pk=shop_owner.id)
@@ -149,3 +125,14 @@ def laptops_category(request):
 def accessories_category(request):
     products = Product.objects.filter(category='accessories')
     return render(request, 'category_page.html', {'category_name': 'Accessories', 'products': products})
+
+
+
+def phone_detail(request, slug):
+    return product_detail(request, MobilePhone, slug, 'phone_detail.html')
+
+def laptop_detail(request, slug):
+    return product_detail(request, Laptop, slug, 'laptop_detail.html')
+
+def accessory_detail(request, slug):
+    return product_detail(request, Accessory, slug, 'accessory_detail.html')

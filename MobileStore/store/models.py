@@ -210,8 +210,28 @@ class Transaction(models.Model):
         return f"Transaction by {self.customer.user.username} for {self.mobile_phone.name}"
 
 class Advertisement(models.Model):
+    laptop = models.ForeignKey(
+        'Laptop',
+        related_name='advertisements',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    mobile_phone = models.ForeignKey(
+        'MobilePhone',
+        related_name='advertisements',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    accessory = models.ForeignKey(
+    'Accessory',
+    related_name='advertisements',
+    on_delete=models.CASCADE,
+    null=True,
+    blank=True
+    )
     shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="advertisements")
-    mobile_phone = models.OneToOneField(MobilePhone, on_delete=models.CASCADE, related_name="advertisement")
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
@@ -276,7 +296,8 @@ class Accessory(models.Model):
     name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True, null=True)
-    
+    mobile_phone = models.ForeignKey(MobilePhone, related_name='accessories', on_delete=models.CASCADE, null=True, blank=True)
+
     # Accessory-specific fields
     type = models.CharField(max_length=255, blank=True, null=True)  # E.g., "Case", "Screen Protector", "Charger"
     compatibility = models.CharField(max_length=255, blank=True, null=True)  # E.g., "For iPhone", "Universal"
@@ -296,7 +317,6 @@ class Accessory(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.shop_owner.store_name}"
-
 
 
 class Laptop(models.Model):
@@ -355,11 +375,16 @@ class Image(models.Model):
     )
     is_featured = models.BooleanField(default=False)
 
+    accessory = models.ForeignKey(Accessory, related_name='images', on_delete=models.CASCADE, null=True, blank=True)
+    laptop = models.ForeignKey(Laptop, related_name='images', on_delete=models.CASCADE, null=True, blank=True)
+    image = models.ImageField(upload_to='images/')
+
     def __str__(self):
         return f"Image for {self.mobile_phone or self.laptop or self.accessory}"
 
 
 class Review(models.Model):
+    accessory = models.ForeignKey(Accessory, related_name="reviews", on_delete=models.CASCADE, null=True, blank=True)
     laptop = models.ForeignKey(Laptop, related_name='reviews', on_delete=models.CASCADE, null=True, blank=True)
     mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="reviews", null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="reviews",  null=True, blank=True)

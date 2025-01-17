@@ -1,207 +1,349 @@
-{% extends 'base.html' %}
-{% load static %}  <!-- Add this line to load the static tag -->
+{% extends 'base.html' %} {% load static %}
+<!-- Add this line to load the static tag -->
 {% block content %}
 <!-- Hero Section -->
 <section class="bg-blue-600 text-white text-center py-20">
-    <h1 class="text-4xl font-bold mb-4">Welcome to Our Mobile Store</h1>
-    <p class="text-lg mb-6">Explore the best phones at unbeatable prices. Find your perfect device now!</p>
-    <a href="#phones" class="bg-white text-blue-600 py-3 px-6 rounded-lg text-xl hover:bg-gray-100 transition-colors duration-300">Shop Now</a>
+  <h1 class="text-4xl font-bold mb-4">Welcome to Our Mobile Store</h1>
+  <p class="text-lg mb-6">
+    Explore the best phones at unbeatable prices. Find your perfect device now!
+  </p>
+  <a
+    href="#phones"
+    class="bg-white text-blue-600 py-3 px-6 rounded-lg text-xl hover:bg-gray-100 transition-colors duration-300"
+    >Shop Now</a
+  >
 </section>
 
 <!-- Featured Ads Section -->
 {% if ads %}
-  <div class="ads-section mb-12">
-    <h2 class="text-3xl font-bold mb-4 text-center text-blue-600">Featured Advertisements</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for ad in ads %}
-        <div class="ad-card bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-          <img src="{{ ad.mobile_phone.images.first.image.url }}" alt="{{ ad.mobile_phone.name }}" class="w-full h-60 object-contain bg-gray-100">
-          <div class="p-4">
-            <h3 class="text-xl font-semibold mb-2">{{ ad.mobile_phone.name }}</h3>
-            <p class="text-gray-600 mb-1">{{ ad.shop_owner.store_name }}</p>
-            <p class="font-bold text-lg text-blue-600">PKR {{ ad.mobile_phone.price }}</p>
-          </div>
-        </div>
-      {% endfor %}
+<div class="ads-section mb-12">
+  <h2 class="text-3xl font-bold mb-4 text-center text-blue-600">
+    Featured Advertisements
+  </h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for ad in ads %}
+    <div
+      class="ad-card bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+    >
+      <img
+        src="{{ ad.mobile_phone.images.first.image.url }}"
+        alt="{{ ad.mobile_phone.name }}"
+        class="w-full h-60 object-contain bg-gray-100"
+      />
+      <div class="p-4">
+        <h3 class="text-xl font-semibold mb-2">{{ ad.mobile_phone.name }}</h3>
+        <p class="text-gray-600 mb-1">{{ ad.shop_owner.store_name }}</p>
+        <p class="font-bold text-lg text-blue-600">
+          PKR {{ ad.mobile_phone.price }}
+        </p>
+      </div>
     </div>
+    {% endfor %}
   </div>
+</div>
 {% else %}
-  <p class="text-center text-gray-500">No active advertisements available at the moment.</p>
+<p class="text-center text-gray-500">
+  No active advertisements available at the moment.
+</p>
 {% endif %}
 
 <!-- Featured Phones Section -->
 <section id="phones" class="mb-12">
-    <h2 class="text-3xl font-bold mb-6 text-center">Our Featured Phones</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for phone in phones %}
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-            <!-- Check if images exist, then display the first one -->
-            {% if phone.images.first %}
-                <img src="{{ phone.images.first.image.url }}" alt="{{ phone.name }}" class="w-full h-60 object-contain bg-gray-100">
-            {% else %}
-                <img src="{% static 'default_image.jpg' %}" alt="Default Image" class="w-full h-60 object-contain bg-gray-100">
-            {% endif %}
-            <div class="p-4">
-                <h3 class="text-xl font-bold mb-2">{{ phone.name }}</h3>
-                <p class="text-gray-600 mb-4">{{ phone.description|truncatewords:10 }}</p>
-                <p class="font-bold text-lg text-blue-600 mb-4">PKR {{ phone.price }}</p>
-                <a href="{% url 'phone_detail' phone.slug %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300">
-                    View Details
-                </a>
-            </div>
-        </div>
-        {% endfor %}
+  <h2 class="text-3xl font-bold mb-6 text-center">Availaible Phones</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for phone in phones %}
+    <div
+      class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+    >
+      <!-- Check if images exist, then display the first one -->
+      {% if phone.images.first %}
+      <img
+        src="{{ phone.images.first.image.url }}"
+        alt="{{ phone.name }}"
+        class="w-full h-60 object-contain bg-gray-100"
+      />
+      {% else %}
+      <img
+        src="{% static 'default_image.jpg' %}"
+        alt="Default Image"
+        class="w-full h-60 object-contain bg-gray-100"
+      />
+      {% endif %}
+      <div class="p-4">
+        <h3 class="text-xl font-bold mb-2">{{ phone.name }}</h3>
+        <p class="text-gray-600 mb-4">
+          {{ phone.description|truncatewords:10 }}
+        </p>
+        <p class="font-bold text-lg text-blue-600 mb-4">
+          PKR {{ phone.price }}
+        </p>
+        <a
+          href="{% url 'phone_detail' phone.slug %}"
+          class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300"
+        >
+          View Details
+        </a>
+      </div>
     </div>
+    {% endfor %}
+  </div>
 </section>
 <section id="laptops" class="mb-12">
-    <h2 class="text-3xl font-bold mb-6 text-center">Available Laptops</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for laptop in laptops %}
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-            {% if laptop.images.first %}
-                <img src="{{ laptop.images.first.image.url }}" alt="{{ laptop.name }}" class="w-full h-60 object-contain bg-gray-100">
-            {% else %}
-                <img src="{% static 'default_image.jpg' %}" alt="Default Image" class="w-full h-60 object-contain bg-gray-100">
-            {% endif %}
-            <div class="p-4">
-                <h3 class="text-xl font-bold mb-2">{{ laptop.name }}</h3>
-                <p class="text-gray-600 mb-4">{{ laptop.description|truncatewords:10 }}</p>
-                <p class="font-bold text-lg text-blue-600 mb-4">PKR {{ laptop.price }}</p>
-                <a href="{% url 'laptop_detail' laptop.slug %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300">
-                    View Details
-                </a>
-            </div>
-        </div>
-        {% endfor %}
+  <h2 class="text-3xl font-bold mb-6 text-center">Available Laptops</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for laptop in laptops %}
+    <div
+      class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+    >
+      {% if laptop.images.first %}
+      <img
+        src="{{ laptop.images.first.image.url }}"
+        alt="{{ laptop.name }}"
+        class="w-full h-60 object-contain bg-gray-100"
+      />
+      {% else %}
+      <img
+        src="{% static 'default_image.jpg' %}"
+        alt="Default Image"
+        class="w-full h-60 object-contain bg-gray-100"
+      />
+      {% endif %}
+      <div class="p-4">
+        <h3 class="text-xl font-bold mb-2">{{ laptop.name }}</h3>
+        <p class="text-gray-600 mb-4">
+          {{ laptop.description|truncatewords:10 }}
+        </p>
+        <p class="font-bold text-lg text-blue-600 mb-4">
+          PKR {{ laptop.price }}
+        </p>
+        <a
+          href="{% url 'laptop_detail' laptop.slug %}"
+          class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300"
+        >
+          View Details
+        </a>
+      </div>
     </div>
+    {% endfor %}
+  </div>
 </section>
 <section class="mb-12">
-    <h2 class="text-3xl font-bold mb-6 text-center">Available Accessories</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for accessory in accessories %}
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-            {% if accessory.images.first %}
-                <img src="{{ accessory.images.first.image.url }}" alt="{{ accessory.name }}" class="w-full h-60 object-contain bg-gray-100">
-            {% else %}
-                <img src="{% static 'default_image.jpg' %}" alt="Default Image" class="w-full h-60 object-contain bg-gray-100">
-            {% endif %}
-            <div class="p-4">
-                <h3 class="text-xl font-bold mb-2">{{ accessory.name }}</h3>
-                <p class="text-gray-600 mb-4">{{ accessory.description|truncatewords:10 }}</p>
-                <p class="font-bold text-lg text-blue-600 mb-4">PKR {{ accessory.price }}</p>
-                <a href="{% url 'accessory_detail' accessory.slug %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300">
-                    View Details
-                </a>
-            </div>
-        </div>
-        {% endfor %}
+  <h2 class="text-3xl font-bold mb-6 text-center">Available Accessories</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for accessory in accessories %}
+    <div
+      class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+    >
+      {% if accessory.images.first %}
+      <img
+        src="{{ accessory.images.first.image.url }}"
+        alt="{{ accessory.name }}"
+        class="w-full h-60 object-contain bg-gray-100"
+      />
+      {% else %}
+      <img
+        src="{% static 'default_image.jpg' %}"
+        alt="Default Image"
+        class="w-full h-60 object-contain bg-gray-100"
+      />
+      {% endif %}
+      <div class="p-4">
+        <h3 class="text-xl font-bold mb-2">{{ accessory.name }}</h3>
+        <p class="text-gray-600 mb-4">
+          {{ accessory.description|truncatewords:10 }}
+        </p>
+        <p class="font-bold text-lg text-blue-600 mb-4">
+          PKR {{ accessory.price }}
+        </p>
+        <a
+          href="{% url 'accessory_detail' accessory.slug %}"
+          class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300"
+        >
+          View Details
+        </a>
+      </div>
     </div>
+    {% endfor %}
+  </div>
 </section>
 
 <!-- Top Categories Section -->
 <section class="bg-gray-50 py-12">
-    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Top Categories</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Smartphones Category -->
-        <a href="{% url 'smartphones_category' %}" class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
-            <img src="{% static 'category_smartphones.jpg' %}" alt="Smartphones" class="w-full h-40 object-cover rounded-lg mb-4">
-            <h3 class="text-xl font-semibold mb-2">Smartphones</h3>
-            <p class="text-gray-600">Explore the latest smartphones from top brands.</p>
-        </a>
-        <!-- Laptops Category -->
-        <a href="{% url 'laptops_category' %}" class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
-            <img src="{% static 'category_laptops.jpg' %}" alt="Laptops" class="w-full h-40 object-cover rounded-lg mb-4">
-            <h3 class="text-xl font-semibold mb-2">Laptops</h3>
-            <p class="text-gray-600">Browse our range of laptops for every need.</p>
-        </a>
-        <!-- Accessories Category -->
-        <a href="{% url 'accessories_category' %}" class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
-            <img src="{% static 'category_accessories.jpg' %}" alt="Accessories" class="w-full h-40 object-cover rounded-lg mb-4">
-            <h3 class="text-xl font-semibold mb-2">Accessories</h3>
-            <p class="text-gray-600">Shop for cases, chargers, and other accessories.</p>
-        </a>
-    </div>
+  <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">
+    Top Categories
+  </h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Smartphones Category -->
+    <a
+      href="{% url 'smartphones_category' %}"
+      class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300"
+    >
+      <img
+        src="{% static 'category_smartphones.jpg' %}"
+        alt="Smartphones"
+        class="w-full h-40 object-cover rounded-lg mb-4"
+      />
+      <h3 class="text-xl font-semibold mb-2">Smartphones</h3>
+      <p class="text-gray-600">
+        Explore the latest smartphones from top brands.
+      </p>
+    </a>
+    <!-- Laptops Category -->
+    <a
+      href="{% url 'laptops_category' %}"
+      class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300"
+    >
+      <img
+        src="{% static 'category_laptops.jpg' %}"
+        alt="Laptops"
+        class="w-full h-40 object-cover rounded-lg mb-4"
+      />
+      <h3 class="text-xl font-semibold mb-2">Laptops</h3>
+      <p class="text-gray-600">Browse our range of laptops for every need.</p>
+    </a>
+    <!-- Accessories Category -->
+    <a
+      href="{% url 'accessories_category' %}"
+      class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300"
+    >
+      <img
+        src="{% static 'category_accessories.jpg' %}"
+        alt="Accessories"
+        class="w-full h-40 object-cover rounded-lg mb-4"
+      />
+      <h3 class="text-xl font-semibold mb-2">Accessories</h3>
+      <p class="text-gray-600">
+        Shop for cases, chargers, and other accessories.
+      </p>
+    </a>
+  </div>
 </section>
 
-
-
-
 <!-- Template for Category Page -->
-    <div class="py-12">
-        <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">{{ category_name }} Products</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {% for product in products %}
-                <div class="product-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-40 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-semibold mb-2">{{ product.name }}</h3>
-                    <p class="text-gray-600">{{ product.description }}</p>
-                    <p class="text-lg font-bold text-gray-800">{{ product.price }} PKR</p>
-                </div>
-            {% endfor %}
-        </div>
+<div class="py-12">
+  <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">
+    {{ category_name }} Products
+  </h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for product in products %}
+    <div
+      class="product-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300"
+    >
+      <img
+        src="{{ product.image.url }}"
+        alt="{{ product.name }}"
+        class="w-full h-40 object-cover rounded-lg mb-4"
+      />
+      <h3 class="text-xl font-semibold mb-2">{{ product.name }}</h3>
+      <p class="text-gray-600">{{ product.description }}</p>
+      <p class="text-lg font-bold text-gray-800">{{ product.price }} PKR</p>
     </div>
+    {% endfor %}
+  </div>
+</div>
 
 <!-- FAQ Section -->
 <section class="bg-white py-12">
-    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Frequently Asked Questions</h2>
-    <div class="max-w-4xl mx-auto">
-        <div class="mb-6">
-            <h3 class="text-xl font-semibold text-gray-800">What is the return policy?</h3>
-            <p class="text-gray-600">We offer a 30-day return policy on all phones. For more details, check our Return & Refund page.</p>
-        </div>
-        <div class="mb-6">
-            <h3 class="text-xl font-semibold text-gray-800">Do you offer warranty on phones?</h3>
-            <p class="text-gray-600">Yes, all our phones come with a 1-year warranty for defects or hardware issues.</p>
-        </div>
-        <div class="mb-6">
-            <h3 class="text-xl font-semibold text-gray-800">How can I track my order?</h3>
-            <p class="text-gray-600">Once your order is shipped, you will receive a tracking number via email.</p>
-        </div>
+  <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">
+    Frequently Asked Questions
+  </h2>
+  <div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+      <h3 class="text-xl font-semibold text-gray-800">
+        What is the return policy?
+      </h3>
+      <p class="text-gray-600">
+        We offer a 30-day return policy on all phones. For more details, check
+        our Return & Refund page.
+      </p>
     </div>
+    <div class="mb-6">
+      <h3 class="text-xl font-semibold text-gray-800">
+        Do you offer warranty on phones?
+      </h3>
+      <p class="text-gray-600">
+        Yes, all our phones come with a 1-year warranty for defects or hardware
+        issues.
+      </p>
+    </div>
+    <div class="mb-6">
+      <h3 class="text-xl font-semibold text-gray-800">
+        How can I track my order?
+      </h3>
+      <p class="text-gray-600">
+        Once your order is shipped, you will receive a tracking number via
+        email.
+      </p>
+    </div>
+  </div>
 </section>
 
 <!-- Newsletter Signup Section -->
 <section class="bg-blue-600 text-white text-center py-12">
-    <h2 class="text-3xl font-bold mb-4">Stay Updated!</h2>
-    <p class="text-lg mb-6">Subscribe to our newsletter for the latest updates, offers, and more!</p>
-    <form action="#" method="POST" class="max-w-md mx-auto">
-        <input type="email" placeholder="Enter your email" class="py-3 px-6 rounded-lg text-gray-700 w-2/3 mb-4" required>
-        <button type="submit" class="bg-white text-blue-600 py-3 px-6 rounded-lg text-xl hover:bg-gray-100 transition-colors duration-300">Subscribe</button>
-    </form>
+  <h2 class="text-3xl font-bold mb-4">Stay Updated!</h2>
+  <p class="text-lg mb-6">
+    Subscribe to our newsletter for the latest updates, offers, and more!
+  </p>
+  <form action="#" method="POST" class="max-w-md mx-auto">
+    <input
+      type="email"
+      placeholder="Enter your email"
+      class="py-3 px-6 rounded-lg text-gray-700 w-2/3 mb-4"
+      required
+    />
+    <button
+      type="submit"
+      class="bg-white text-blue-600 py-3 px-6 rounded-lg text-xl hover:bg-gray-100 transition-colors duration-300"
+    >
+      Subscribe
+    </button>
+  </form>
 </section>
 
 <!-- Store Locations Section -->
 <section class="bg-gray-50 py-12">
-    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Visit Our Stores</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="store-card bg-white rounded-lg shadow-lg p-6 text-center">
-            <h3 class="text-xl font-semibold mb-2">Islamabad Store</h3>
-            <p class="text-gray-600">123 Main Street, Islamabad</p>
-            <p class="text-gray-500">Open: Mon-Sat, 10 AM - 7 PM</p>
-        </div>
-        <div class="store-card bg-white rounded-lg shadow-lg p-6 text-center">
-            <h3 class="text-xl font-semibold mb-2">Lahore Store</h3>
-            <p class="text-gray-600">456 Liberty Market, Lahore</p>
-            <p class="text-gray-500">Open: Mon-Sat, 10 AM - 7 PM</p>
-        </div>
-        <div class="store-card bg-white rounded-lg shadow-lg p-6 text-center">
-            <h3 class="text-xl font-semibold mb-2">Karachi Store</h3>
-            <p class="text-gray-600">789 Karachi Plaza, Karachi</p>
-            <p class="text-gray-500">Open: Mon-Sat, 10 AM - 7 PM</p>
-        </div>
+  <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">
+    Visit Our Stores
+  </h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="store-card bg-white rounded-lg shadow-lg p-6 text-center">
+      <h3 class="text-xl font-semibold mb-2">Islamabad Store</h3>
+      <p class="text-gray-600">123 Main Street, Islamabad</p>
+      <p class="text-gray-500">Open: Mon-Sat, 10 AM - 7 PM</p>
     </div>
+    <div class="store-card bg-white rounded-lg shadow-lg p-6 text-center">
+      <h3 class="text-xl font-semibold mb-2">Lahore Store</h3>
+      <p class="text-gray-600">456 Liberty Market, Lahore</p>
+      <p class="text-gray-500">Open: Mon-Sat, 10 AM - 7 PM</p>
+    </div>
+    <div class="store-card bg-white rounded-lg shadow-lg p-6 text-center">
+      <h3 class="text-xl font-semibold mb-2">Karachi Store</h3>
+      <p class="text-gray-600">789 Karachi Plaza, Karachi</p>
+      <p class="text-gray-500">Open: Mon-Sat, 10 AM - 7 PM</p>
+    </div>
+  </div>
 </section>
 
 <!-- Social Media Section -->
 <section class="bg-blue-600 text-white text-center py-12">
-    <h2 class="text-3xl font-bold mb-4">Follow Us</h2>
-    <p class="text-lg mb-6">Stay connected for the latest updates and promotions!</p>
-    <div class="flex justify-center gap-6">
-        <a href="#" class="text-2xl hover:text-gray-200"><i class="fab fa-facebook"></i></a>
-        <a href="#" class="text-2xl hover:text-gray-200"><i class="fab fa-twitter"></i></a>
-        <a href="#" class="text-2xl hover:text-gray-200"><i class="fab fa-instagram"></i></a>
-        <a href="#" class="text-2xl hover:text-gray-200"><i class="fab fa-youtube"></i></a>
-    </div>
+  <h2 class="text-3xl font-bold mb-4">Follow Us</h2>
+  <p class="text-lg mb-6">
+    Stay connected for the latest updates and promotions!
+  </p>
+  <div class="flex justify-center gap-6">
+    <a href="#" class="text-2xl hover:text-gray-200"
+      ><i class="fab fa-facebook"></i
+    ></a>
+    <a href="#" class="text-2xl hover:text-gray-200"
+      ><i class="fab fa-twitter"></i
+    ></a>
+    <a href="#" class="text-2xl hover:text-gray-200"
+      ><i class="fab fa-instagram"></i
+    ></a>
+    <a href="#" class="text-2xl hover:text-gray-200"
+      ><i class="fab fa-youtube"></i
+    ></a>
+  </div>
 </section>
 
 {% endblock %}
