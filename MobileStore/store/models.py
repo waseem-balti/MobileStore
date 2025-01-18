@@ -2,6 +2,105 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.core.validators import FileExtensionValidator
+import uuid
+from datetime import datetime, timedelta
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    phone = models.CharField(max_length=15, blank=True)
+    address = models.TextField(blank=True)
+    bio = models.TextField(max_length=500, blank=True)
+
+    def __str__(self):
+        return f'{self.user.username} Profile'
+
+    @receiver(post_save, sender=User)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            Profile.objects.create(user=instance)
+
+    @receiver(post_save, sender=User)
+    def save_user_profile(sender, instance, **kwargs):
+        instance.profile.save()
+
+
+class Address(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    street_address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.city}'
+
+class PaymentMethod(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    card_number = models.CharField(max_length=16)
+    expiry_date = models.CharField(max_length=5)  # MM/YY format
+    cardholder_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.card_number[-4:]}'
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=255)
+    product_category = models.CharField(max_length=100)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.product_name}'
+
+
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Processing', 'Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order_number = models.CharField(max_length=20, unique=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    shipping_address = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Order {self.order_number}'
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey('store.Product', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f'{self.quantity} x {self.product.name}'
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = datetime.now() + timedelta(hours=24)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_valid(self):
+        return not self.is_used and datetime.now() < self.expires_at
 
 # User roles for better management
 class Role(models.TextChoices):
@@ -38,6 +137,11 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+
+from django.db import models
+from django.utils.text import slugify
+from django.contrib.auth.models import User
+
 class MobilePhone(models.Model):
     shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="mobile_phones")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="mobile_phones")
@@ -56,8 +160,7 @@ class MobilePhone(models.Model):
     # Body Fields
     dimensions = models.CharField(max_length=255, blank=True, null=True)
     weight = models.CharField(max_length=255, blank=True, null=True)
-    build = models.TextField(blank=True, null=True)
-    sim = models.CharField(max_length=255, blank=True, null=True)
+    sim = models.CharField(max_length=255)
     water_resistant = models.BooleanField(default=False)
 
     # Display Fields
@@ -67,7 +170,7 @@ class MobilePhone(models.Model):
     display_protection = models.CharField(max_length=255, blank=True, null=True)
 
     # Platform Fields
-    os = models.CharField(max_length=255, blank=True, null=True)
+    os = models.CharField(max_length=255)
     chipset = models.CharField(max_length=255, blank=True, null=True)
     cpu = models.CharField(max_length=255, blank=True, null=True)
     gpu = models.CharField(max_length=255, blank=True, null=True)
@@ -75,6 +178,7 @@ class MobilePhone(models.Model):
     # Memory Fields
     card_slot = models.CharField(max_length=255, blank=True, null=True)
     internal_memory = models.CharField(max_length=255, blank=True, null=True)
+    ram = models.CharField(max_length=255)
 
     # Main Camera Fields
     main_camera = models.TextField(blank=True, null=True)
@@ -91,39 +195,29 @@ class MobilePhone(models.Model):
 
     # Communication Fields
     wlan = models.CharField(max_length=255, blank=True, null=True)
-    bluetooth = models.CharField(max_length=255, blank=True, null=True)
+    bluetooth = models.BooleanField(default=True)
     positioning = models.CharField(max_length=255, blank=True, null=True)
     nfc = models.BooleanField(default=False)
-    usb = models.CharField(max_length=255, blank=True, null=True)
+    usb_type = models.CharField(max_length=255, blank=True, null=True)
 
     # Features Fields
     sensors = models.TextField(blank=True, null=True)
+    fingerprint = models.BooleanField(default=False)
+    wifi = models.BooleanField(default=True)
 
     # Battery Fields
     battery_type = models.CharField(max_length=255, blank=True, null=True)
+    battery_capacity = models.CharField(max_length=255)
     charging = models.TextField(blank=True, null=True)
+    fast_charging = models.BooleanField(default=False)
+    fast_wireless_charging = models.BooleanField(default=False)
+    reverse_wireless_charging = models.BooleanField(default=False)
 
     # Miscellaneous Fields
     colors = models.TextField(blank=True, null=True)
     price_range = models.CharField(max_length=255, blank=True, null=True)
-
-    # Basic Fields
-    storage = models.CharField(max_length=255)
-    ram = models.CharField(max_length=255)
-    battery_capacity = models.CharField(max_length=255)
-    camera = models.CharField(max_length=255)
-    display = models.CharField(max_length=255)
-    os = models.CharField(max_length=255)
-    sim = models.CharField(max_length=255)
     pta_approved = models.BooleanField(default=False)
     five_g_supported = models.BooleanField(default=False)
-    fingerprint = models.BooleanField(default=False)
-    wifi = models.BooleanField(default=True)
-    bluetooth = models.BooleanField(default=True)
-    usb_type_c = models.BooleanField(default=True)
-    fast_charging = models.BooleanField(default=False)
-    fast_wireless_charging = models.BooleanField(default=False)
-    reverse_wireless_charging = models.BooleanField(default=False)
     is_available = models.BooleanField(default=True)
     views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -148,30 +242,8 @@ class SellerReview(models.Model):
     def __str__(self):
         return f"Review by {self.customer.user.username} for {self.shop_owner.store_name}"
 
-class Order(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders")
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, choices=[
-        ("processing", "Processing"),
-        ("shipped", "Shipped"),
-        ("delivered", "Delivered"),
-        ("cancelled", "Cancelled"),
-    ], default="processing")
-
-    def __str__(self):
-        return f"Order {self.id} by {self.customer.user.username}"
 
 
-# Order Items model for line items in an order
-class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"Item: {self.mobile_phone.name} in Order {self.order.id}"
 
 # Notifications for system alerts
 class Notification(models.Model):
@@ -378,6 +450,8 @@ class Image(models.Model):
     accessory = models.ForeignKey(Accessory, related_name='images', on_delete=models.CASCADE, null=True, blank=True)
     laptop = models.ForeignKey(Laptop, related_name='images', on_delete=models.CASCADE, null=True, blank=True)
     image = models.ImageField(upload_to='images/')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Image for {self.mobile_phone or self.laptop or self.accessory}"
@@ -389,15 +463,24 @@ class Review(models.Model):
     mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="reviews", null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="reviews",  null=True, blank=True)
     review_text = models.TextField()
-    rating = models.PositiveIntegerField()
+    rating = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 6)])
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
     def __str__(self):
         if self.user:
-            return f'Review by {self.user.username} for {self.mobile_phone}'
+            # Check for the mobile_phone, laptop, or accessory field and return the first one found
+            if self.mobile_phone:
+                return f'Review by {self.user.username} for {self.mobile_phone}'
+            elif self.laptop:
+                return f'Review by {self.user.username} for {self.laptop}'
+            elif self.accessory:
+                return f'Review by {self.user.username} for {self.accessory}'
+            else:
+                return f'Review by {self.user.username} for an unspecified product'
         return 'No user assigned'
+
     
 
 

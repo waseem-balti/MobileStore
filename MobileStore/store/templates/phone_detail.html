@@ -103,10 +103,10 @@
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center space-x-4">
                         <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <span class="text-xl font-bold text-green-600">{{ review.customer.user.username|make_list|first }}</span>
+                            <span class="text-xl font-bold text-green-600">{{ review.user.username|make_list|first }}</span>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-900">{{ review.customer.user.username }}</h4>
+                            <h4 class="font-semibold text-gray-900">{{ review.user.username }}</h4>
                             <p class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</p>
                         </div>
                     </div>

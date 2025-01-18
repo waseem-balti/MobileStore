@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'store',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -37,6 +38,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ROOT_URLCONF = 'MobileStore.urls'
 
@@ -117,3 +124,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')    # Path to the media folder
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'qauser125@gmail.com'
+EMAIL_HOST_PASSWORD = 'Test@321'
+DEFAULT_FROM_EMAIL = 'qauser125@gmail.com'
+
+# Login redirect
+LOGIN_REDIRECT_URL = 'profile'
+LOGIN_URL = 'login'

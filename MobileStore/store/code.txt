@@ -1,404 +1,244 @@
-File Directory Tree,
-
-├── db.sqlite3
-├── manage.py
-├── media
-│   └── mobile_phone_images
-│       ├── Pixel_4a_Barely_Blue.jpg
-│       ├── Pixel_5_Black.jpg
-│       ├── Pixel_5_Sage.png
-│       └── Pxel_4a_Black.jpg
-├── MobileStore
-│   ├── asgi.py
-│   ├── media
-│   ├── settings.py
-│   ├── static
-│   ├── urls.py
-│   ├── wsgi.py
-|
-├── static
-│   ├── Pixel 5 Black.jpg
-│   └── Pixel 5 Sage.png
-└── store
-    ├── admin.py
-    ├── apps.py
-    ├── code.txt
-    ├── forms.py
-    ├── models.py
-    ├── templates
-    │   ├── base.html
-    │   ├── index.html
-    │   └── phone_detail.html
-    ├── tests.py
-    ├── urls.py
-    ├── views.py
-
-models.py,
-from django.db import models
-from django.contrib.auth.models import User
-from django.utils.text import slugify
-from django.core.validators import FileExtensionValidator
-
-# User roles for better management
-class Role(models.TextChoices):
-    SHOP_OWNER = "shop_owner", "Shop Owner"
-    CUSTOMER = "customer", "Customer"
-    ADMIN = "admin", "Admin"
-
-
-class ShopOwner(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="shop_owner_profile")
-    name = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=15)
-    address = models.TextField()
-    store_name = models.CharField(max_length=255)
-    registration_date = models.DateTimeField(auto_now_add=True)
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)  # Average rating for shop owner
-
-    def __str__(self):
-        return self.store_name
-
-class Customer(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="customer_profile")
-    phone_number = models.CharField(max_length=15)
-    address = models.TextField()
-    wishlist = models.ManyToManyField('MobilePhone', related_name='wishlisted_by', blank=True)
-
-    def __str__(self):
-        return self.user.username
-
-class Category(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
-    description = models.TextField(blank=True, null=True)  # Optional description for category
-
-    def __str__(self):
-        return self.name
-
-
-class MobilePhone(models.Model):
-    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="mobile_phones")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="mobile_phones")
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
-    
-    # New fields based on the specification page
-    # NETWORK
-    technology = models.CharField(max_length=255, blank=True, null=True)  # GSM, HSPA, LTE, 5G
-    network_bands = models.TextField(blank=True, null=True)  # 2G, 3G, 4G, 5G bands
-    
-    # LAUNCH
-    announcement_date = models.DateTimeField(blank=True, null=True)
-    status = models.CharField(max_length=255, blank=True, null=True)  # e.g., "Coming soon", "Released"
-    
-    # BODY
-    dimensions = models.CharField(max_length=255, blank=True, null=True)
-    weight = models.CharField(max_length=255, blank=True, null=True)
-    build = models.TextField(blank=True, null=True)
-    sim = models.CharField(max_length=255, blank=True, null=True)  # eSIM, Dual SIM
-    water_resistant = models.BooleanField(default=False)
-    
-    # DISPLAY
-    display_type = models.CharField(max_length=255, blank=True, null=True)
-    display_size = models.CharField(max_length=255, blank=True, null=True)
-    display_resolution = models.CharField(max_length=255, blank=True, null=True)
-    display_protection = models.CharField(max_length=255, blank=True, null=True)
-    
-    # PLATFORM
-    os = models.CharField(max_length=255, blank=True, null=True)  # Android, iOS
-    chipset = models.CharField(max_length=255, blank=True, null=True)
-    cpu = models.CharField(max_length=255, blank=True, null=True)
-    gpu = models.CharField(max_length=255, blank=True, null=True)
-    
-    # MEMORY
-    card_slot = models.CharField(max_length=255, blank=True, null=True)  # microSDXC, none
-    internal_memory = models.CharField(max_length=255, blank=True, null=True)
-    
-    # MAIN CAMERA
-    main_camera = models.TextField(blank=True, null=True)  # E.g., "50 MP, wide, etc."
-    camera_features = models.TextField(blank=True, null=True)  # E.g., "LED flash, HDR"
-    video_capabilities = models.CharField(max_length=255, blank=True, null=True)
-    
-    # SELFIE CAMERA
-    selfie_camera = models.TextField(blank=True, null=True)
-    selfie_video = models.CharField(max_length=255, blank=True, null=True)
-    
-    # SOUND
-    speaker = models.CharField(max_length=255, blank=True, null=True)
-    jack_3_5mm = models.BooleanField(default=False)
-    
-    # COMMS
-    wlan = models.CharField(max_length=255, blank=True, null=True)
-    bluetooth = models.CharField(max_length=255, blank=True, null=True)
-    positioning = models.CharField(max_length=255, blank=True, null=True)
-    nfc = models.BooleanField(default=False)
-    usb = models.CharField(max_length=255, blank=True, null=True)
-    
-    # FEATURES
-    sensors = models.TextField(blank=True, null=True)
-    
-    # BATTERY
-    battery_type = models.CharField(max_length=255, blank=True, null=True)
-    charging = models.TextField(blank=True, null=True)
-    
-    # MISC
-    colors = models.TextField(blank=True, null=True)
-    price_range = models.CharField(max_length=255, blank=True, null=True)  # Example: "About 290 EUR"
-    
-    # Existing fields
-    storage = models.CharField(max_length=255)
-    ram = models.CharField(max_length=255)
-    battery_capacity = models.CharField(max_length=255)
-    camera = models.CharField(max_length=255)
-    display = models.CharField(max_length=255)
-    os = models.CharField(max_length=255)
-    sim = models.CharField(max_length=255)
-    pta_approved = models.BooleanField(default=False)
-    five_g_supported = models.BooleanField(default=False)
-    fingerprint = models.BooleanField(default=False)
-    wifi = models.BooleanField(default=True)
-    bluetooth = models.BooleanField(default=True)
-    usb_type_c = models.BooleanField(default=True)
-    fast_charging = models.BooleanField(default=False)
-    fast_wireless_charging = models.BooleanField(default=False)
-    reverse_wireless_charging = models.BooleanField(default=False)
-    is_available = models.BooleanField(default=True)
-    views = models.PositiveIntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    slug = models.SlugField(unique=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.name} - {self.shop_owner.store_name}"
-
-# Seller reviews to rate shops
-class SellerReview(models.Model):
-    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="seller_reviews")
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="seller_reviews")
-    review_text = models.TextField()
-    rating = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Review by {self.customer.user.username} for {self.shop_owner.store_name}"
-
-# Order model to manage customer purchases
-class Order(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders")
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, choices=[
-        ("processing", "Processing"),
-        ("shipped", "Shipped"),
-        ("delivered", "Delivered"),
-        ("cancelled", "Cancelled"),
-    ], default="processing")
-
-    def __str__(self):
-        return f"Order {self.id} by {self.customer.user.username}"
-
-# Order Items model for line items in an order
-class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"Item: {self.mobile_phone.name} in Order {self.order.id}"
-
-# Notifications for system alerts
-class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
-    message = models.TextField()
-    is_read = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Notification for {self.user.username}"
-
-
-class Image(models.Model):
-    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="images")
-    image = models.ImageField(
-        upload_to="mobile_phone_images/",
-        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])]  # Enforcing image extensions
-    )
-    is_featured = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Image for {self.mobile_phone.name}"
-
-
-class Review(models.Model):
-    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="reviews")
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="reviews")
-    review_text = models.TextField()
-    rating = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Review by {self.customer.user.username} for {self.mobile_phone.name}"
-
-class Transaction(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="transactions")
-    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.SET_NULL, null=True, related_name="transactions")
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    transaction_date = models.DateTimeField(auto_now_add=True)
-    payment_method = models.CharField(max_length=255, choices=[
-        ("credit_card", "Credit Card"),
-        ("debit_card", "Debit Card"),
-        ("cash", "Cash"),
-        ("bank_transfer", "Bank Transfer")
-    ])
-    status = models.CharField(max_length=50, choices=[
-        ("completed", "Completed"),
-        ("pending", "Pending"),
-        ("cancelled", "Cancelled")
-    ], default="pending")
-
-    def __str__(self):
-        return f"Transaction by {self.customer.user.username} for {self.mobile_phone.name}"
-
-class Advertisement(models.Model):
-    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="advertisements")
-    mobile_phone = models.OneToOneField(MobilePhone, on_delete=models.CASCADE, related_name="advertisement")
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    is_active = models.BooleanField(default=True)
-    priority = models.IntegerField(default=0)  # Higher priority ads can appear at the top
-
-    def __str__(self):
-        return f"Ad for {self.mobile_phone.name} by {self.shop_owner.store_name}"
-
-class Inquiry(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="inquiries")
-    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="inquiries")
-    message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Inquiry by {self.customer.user.username} for {self.mobile_phone.name}"
-    
-
-
-class Tablet(models.Model):
-    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="tablets")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="tablets")
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
-    
-    # Tablet-specific fields
-    screen_size = models.CharField(max_length=255, blank=True, null=True)
-    operating_system = models.CharField(max_length=255, blank=True, null=True)
-    storage = models.CharField(max_length=255)
-    ram = models.CharField(max_length=255)
-    battery_capacity = models.CharField(max_length=255)
-    camera = models.CharField(max_length=255)
-    sim_support = models.CharField(max_length=255, blank=True, null=True)
-    
-    # Common specifications (can be shared with MobilePhone model)
-    display = models.CharField(max_length=255)
-    os = models.CharField(max_length=255)
-    wifi = models.BooleanField(default=True)
-    bluetooth = models.BooleanField(default=True)
-    usb_type_c = models.BooleanField(default=True)
-    is_available = models.BooleanField(default=True)
-    views = models.PositiveIntegerField(default=0)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    slug = models.SlugField(unique=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.name} - {self.shop_owner.store_name}"
+File directory tree,
+├── admin.py
+├── apps.py
+├── code.txt
+├── forms.py
+├── models.py
+├── templates
+│   ├── accessories.html
+│   ├── accessory_detail.html
+│   ├── base.html
+│   ├── category_page.html
+│   ├── index.html
+│   ├── laptops.html
+│   ├── laptop_detail.html
+│   ├── phones.html
+│   └── phone_detail.html
+├── tests.py
+├── urls.py
+├── views.py
 
 
 
-class Accessory(models.Model):
-    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="accessories")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="accessories")
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
-    
-    # Accessory-specific fields
-    type = models.CharField(max_length=255, blank=True, null=True)  # E.g., "Case", "Screen Protector", "Charger"
-    compatibility = models.CharField(max_length=255, blank=True, null=True)  # E.g., "For iPhone", "Universal"
-    
-    # Common specifications (can be shared with MobilePhone model)
-    is_available = models.BooleanField(default=True)
-    views = models.PositiveIntegerField(default=0)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    slug = models.SlugField(unique=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
+models.py>
+{% extends 'base.html' %}
 
-    def __str__(self):
-        return f"{self.name} - {self.shop_owner.store_name}"
+{% block content %}
+<div class="container mx-auto p-6">
+    <!-- Main Product Card -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transition-shadow hover:shadow-2xl">
+        <div class="flex flex-col lg:flex-row">
+            <!-- Image Gallery Section -->
+            <div class="lg:w-1/2 p-8 bg-gray-50">
+                <div class="relative w-full h-[500px] mb-6">
+                    <img id="previewImage" src="{{ phone.images.first.image.url }}" 
+                         alt="{{ phone.name }}" 
+                         class="w-full h-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-105">
+                    <canvas id="zoomCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none rounded-xl"></canvas>
+                </div>
+                <!-- Thumbnail Gallery -->
+                <div class="mt-6 grid grid-cols-4 gap-4">
+                    {% for image in images %}
+                    <div class="aspect-square overflow-hidden rounded-lg border-2 border-gray-200 hover:border-indigo-500 transition-all duration-300 transform hover:scale-105">
+                        <img src="{{ image.image.url }}" 
+                             alt="Image for {{ phone.name }}" 
+                             class="w-full h-full object-contain cursor-pointer" 
+                             onmouseover="updatePreview('{{ image.image.url }}')">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
+            <!-- Product Details Section -->
+            <div class="lg:w-1/2 p-8 lg:pl-12 flex flex-col">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4 leading-tight">{{ phone.name }}</h1>
+                <p class="text-lg text-gray-600 mb-8 leading-relaxed">{{ phone.description }}</p>
+                
+                <!-- Price Tag -->
+                <div class="bg-green-50 p-4 rounded-xl mb-8">
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-semibold text-gray-700">Price</span>
+                        <span class="text-3xl font-bold text-green-600">PKR {{ phone.price }}</span>
+                    </div>
+                </div>
 
+                <!-- Specifications Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Storage</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.storage }} GB</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">RAM</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.ram }} GB</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Battery</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.battery_capacity }} mAh</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Chipset</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.chipset }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Camera</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.camera }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Display</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.display }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">Operating System</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.os }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <span class="text-sm text-gray-500">SIM</span>
+                        <p class="text-lg font-semibold text-gray-800">{{ phone.sim }}</p>
+                    </div>
+                </div>
 
-class Laptop(models.Model):
-    shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="laptops")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="laptops")
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
-    
-    # Laptop-specific fields
-    screen_size = models.CharField(max_length=255, blank=True, null=True)
-    operating_system = models.CharField(max_length=255, blank=True, null=True)
-    storage = models.CharField(max_length=255)
-    ram = models.CharField(max_length=255)
-    processor = models.CharField(max_length=255)
-    graphics_card = models.CharField(max_length=255, blank=True, null=True)
-    battery_life = models.CharField(max_length=255)
-    
-    # Common specifications (can be shared with MobilePhone model)
-    display = models.CharField(max_length=255)
-    os = models.CharField(max_length=255)
-    wifi = models.BooleanField(default=True)
-    bluetooth = models.BooleanField(default=True)
-    usb_type_c = models.BooleanField(default=True)
-    is_available = models.BooleanField(default=True)
-    views = models.PositiveIntegerField(default=0)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    slug = models.SlugField(unique=True, blank=True)
+                <!-- Features Badges -->
+                <div class="flex flex-wrap gap-4 mb-8">
+                    <div class="px-4 py-2 rounded-full {% if phone.pta_approved %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} font-medium">
+                        PTA {% if phone.pta_approved %}Approved{% else %}Not Approved{% endif %}
+                    </div>
+                    <div class="px-4 py-2 rounded-full {% if phone.five_g_supported %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %} font-medium">
+                        {% if phone.five_g_supported %}5G Supported{% else %}4G{% endif %}
+                    </div>
+                </div>
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
+                <!-- Add to Cart Button -->
+                <button class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
 
-    def __str__(self):
-        return f"{self.name} - {self.shop_owner.store_name}"
+    <!-- Reviews Section -->
+    <div class="mt-16">
+        <h3 class="text-3xl font-bold mb-8 text-gray-900">Customer Reviews</h3>
+        {% if reviews %}
+        <div class="grid gap-6">
+            {% for review in reviews %}
+            <div class="bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <span class="text-xl font-bold text-green-600">{{ review.user.username|make_list|first }}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">{{ review.user.username }}</h4>
+                            <p class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        {% for i in rating_range %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if i <= review.rating %}#FCD34D{% else %}#E5E7EB{% endif %}" 
+                             class="mr-1" viewBox="0 0 16 16">
+                            <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z"/>
+                        </svg>
+                        {% endfor %}
+                    </div>
+                </div>
+                <p class="text-gray-700 leading-relaxed">{{ review.review_text }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-gray-50 rounded-xl p-8 text-center">
+            <p class="text-gray-600 text-lg">No reviews yet. Be the first to share your experience!</p>
+        </div>
+        {% endif %}
+    </div>
 
+    <!-- Add Review Form -->
+    <div class="mt-16 mb-8">
+        <h4 class="text-2xl font-bold mb-6 text-gray-900">Write a Review</h4>
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div>
+                    <label for="rating" class="block text-lg font-medium text-gray-700 mb-4">Rating</label>
+                    <div class="flex space-x-4">
+                        {% for i in rating_range %}
+                        <label class="relative">
+                            <input type="radio" name="rating" value="{{ i }}" class="hidden peer" {% if form.rating.value == i %}checked{% endif %}>
+                            <div class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-gray-200 cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50">
+                                <span class="text-xl font-semibold text-gray-700 peer-checked:text-green-600">{{ i }}</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
 
-views.py,
+                <div>
+                    <label for="review-text" class="block text-lg font-medium text-gray-700 mb-2">Your Review</label>
+                    <textarea name="review_text" id="review-text" rows="4" 
+                              class="w-full border-2 border-gray-200 rounded-xl p-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                              placeholder="Share your experience with this product..."></textarea>
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+                    Submit Review
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function updatePreview(imageUrl) {
+        const previewImage = document.getElementById('previewImage');
+        previewImage.src = imageUrl;
+        
+        // Add fade effect
+        previewImage.style.opacity = '0';
+        setTimeout(() => {
+            previewImage.style.opacity = '1';
+        }, 100);
+    }
+
+    // Initialize preview image transition
+    const previewImage = document.getElementById('previewImage');
+    previewImage.style.transition = 'all 0.3s ease-in-out';
+
+    // Zoom functionality
+    const zoomCanvas = document.getElementById('zoomCanvas');
+    const ctx = zoomCanvas.getContext('2d');
+
+    previewImage.addEventListener('mousemove', (e) => {
+        const rect = previewImage.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const zoomFactor = 2;
+        const width = previewImage.width * zoomFactor;
+        const height = previewImage.height * zoomFactor;
+        const zoomX = (x / previewImage.width) * width - zoomCanvas.width / 2;
+        const zoomY = (y / previewImage.height) * height - zoomCanvas.height / 2;
+
+        ctx.clearRect(0, 0, zoomCanvas.width, zoomCanvas.height);
+        ctx.drawImage(previewImage, zoomX, zoomY, width, height, 0, 0, zoomCanvas.width, zoomCanvas.height);
+    });
+
+    previewImage.onload = function() {
+        zoomCanvas.width = previewImage.width;
+        zoomCanvas.height = previewImage.height;
+    };
+</script>
+{% endblock %}
+
+views.py>
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from .models import MobilePhone, Review, Advertisement, Image
-from .forms import ReviewForm, InquiryForm
+from .models import MobilePhone, Product, Review, Advertisement, Image, Order, SellerReview, Laptop, Accessory, ShopOwner
+from .forms import ReviewForm, InquiryForm, MobilePhoneForm, OrderForm, SellerReviewForm
+from django.http import HttpResponse
+
 
 def index(request):
     phones = MobilePhone.objects.filter(is_available=True)
@@ -407,10 +247,14 @@ def index(request):
         start_date__lte=timezone.now(), 
         end_date__gte=timezone.now()
     ).order_by('-priority')
-    
+    laptops = Laptop.objects.all()
+    accessories = Accessory.objects.all()
+    ads = Advertisement.objects.all()
     return render(request, 'index.html', {
-        'phones': phones, 
-        'ads': ads
+        'phones': phones,
+        'ads': ads,
+        'laptops': laptops,
+        'accessories': accessories
     })
 
 def phone_detail(request, slug):
@@ -423,15 +267,18 @@ def phone_detail(request, slug):
         form = ReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
-            review.customer = request.user.customer_profile
-            review.mobile_phone = phone
-            review.save()
-            return redirect('phone_detail', slug=slug)
+            if request.user.is_authenticated:
+                review.user = request.user
+                review.mobile_phone = phone
+                review.save()
+                return redirect('phone_detail', slug=slug)
+            else:
+                return redirect('login')  # Redirect unauthenticated users to login
     else:
         form = ReviewForm()
 
     rating_range = range(1, 6)
-    
+
     return render(request, 'phone_detail.html', {
         'phone': phone, 
         'reviews': reviews, 
@@ -442,18 +289,216 @@ def phone_detail(request, slug):
     })
 
 
-urls.py,
+
+
+def laptops(request):
+    laptops = Laptop.objects.filter(is_available=True)
+    return render(request, 'laptops.html', {'laptops': laptops})
+
+
+def accessories(request):
+    accessories = Accessory.objects.filter(is_available=True)
+    return render(request, 'accessories.html', {'accessories': accessories})
+
+
+def laptop_detail(request, slug):
+    laptop = get_object_or_404(Laptop, slug=slug)  # Assuming you have a 'slug' field in your Laptop model
+    reviews = laptop.reviews.all()  # Assuming there's a related name for reviews in the Laptop model
+    rating_range = range(1, 6)
+
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            if request.user.is_authenticated:
+                review.user = request.user
+                review.laptop = laptop
+                review.save()
+                return redirect('laptop_detail', slug=slug)
+            else:
+                return redirect('login')  # Redirect unauthenticated users to login
+    else:
+        form = ReviewForm()
+
+    return render(request, 'laptop_detail.html', {
+        'laptop': laptop,
+        'reviews': reviews,
+        'form': form,
+        'rating_range': rating_range,
+    })
+
+def accessory_detail(request, slug):
+    accessory = get_object_or_404(Accessory, slug=slug)
+    reviews = accessory.reviews.all()  # Assuming the related_name for reviews is 'reviews'
+    rating_range = range(1, 6)  # For star ratings
+
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            if request.user.is_authenticated:
+                review.user = request.user
+                review.accessory = accessory
+                review.save()
+                return redirect('accessory_detail', slug=slug)
+            else:
+                return redirect('login')  # Redirect unauthenticated users to login
+    else:
+        form = ReviewForm()
+
+    return render(request, 'accessory_detail.html', {
+        'accessory': accessory,
+        'reviews': reviews,
+        'form': form,
+        'rating_range': rating_range,
+    })
+
+def submit_review(request, laptop_id):
+    laptop = get_object_or_404(Laptop, id=laptop_id)
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.laptop = laptop
+            if request.user.is_authenticated:
+                review.user = request.user  # Assign the logged-in user
+                review.save()
+                return redirect('laptop_detail', slug=laptop.slug)  # Redirect after saving
+            else:
+                return redirect('login')  # Redirect to login if the user is not authenticated
+    else:
+        form = ReviewForm()
+
+    return render(request, 'laptop_detail.html', {
+        'laptop': laptop,
+        'form': form,
+    })
+
+
+
+def mobile_phone_list(request):
+    phones = MobilePhone.objects.all()
+    return render(request, 'phones.html', {'phones': phones})
+
+def order_create(request):
+    if request.method == 'POST':
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            order = form.save(commit=False)
+            order.customer = request.user.customer_profile
+            order.save()
+            return redirect('order_detail', pk=order.id)
+    else:
+        form = OrderForm()
+    return render(request, 'order_create.html', {'form': form})
+
+def seller_review(request, shop_owner_id):
+    shop_owner = ShopOwner.objects.get(id=shop_owner_id)
+    if request.method == 'POST':
+        form = SellerReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.shop_owner = shop_owner
+            review.save()
+            return redirect('shop_owner_detail', pk=shop_owner.id)
+    else:
+        form = SellerReviewForm()
+    return render(request, 'seller_review.html', {'form': form, 'shop_owner': shop_owner})
+
+
+
+def smartphones_category(request):
+    products = Product.objects.filter(category='smartphones')
+    return render(request, 'category_page.html', {'category_name': 'Smartphones', 'products': products})
+
+def laptops_category(request):
+    products = Product.objects.filter(category='laptops')
+    return render(request, 'category_page.html', {'category_name': 'Laptops', 'products': products})
+
+def accessories_category(request):
+    products = Product.objects.filter(category='accessories')
+    return render(request, 'category_page.html', {'category_name': 'Accessories', 'products': products})
+
+
+forms.py>
+from django import forms
+from .models import MobilePhone, Review, Inquiry, Order, SellerReview, Category, ShopOwner, Customer, Advertisement, Image, Laptop, Accessory, Product
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['review_text', 'rating']
+
+class InquiryForm(forms.ModelForm):
+    class Meta:
+        model = Inquiry
+        fields = ['message']
+
+
+
+class MobilePhoneForm(forms.ModelForm):
+    class Meta:
+        model = MobilePhone
+        fields = ['name', 'price', 'description', 'category', 'technology', 'network_bands', 
+                  'announcement_date', 'status', 'dimensions', 'weight', 'build', 'sim', 'water_resistant',
+                  'display_type', 'display_size', 'display_resolution', 'display_protection', 'os', 'chipset', 'cpu',
+                  'gpu', 'card_slot', 'internal_memory', 'main_camera', 'camera_features', 'video_capabilities',
+                  'selfie_camera', 'selfie_video', 'speaker', 'jack_3_5mm', 'wlan', 'bluetooth', 'positioning', 'nfc',
+                  'usb', 'sensors', 'battery_type', 'charging', 'colors', 'price_range', 'storage', 'ram', 'battery_capacity', 
+                  'camera', 'display', 'os', 'sim', 'pta_approved', 'five_g_supported', 'fingerprint', 'wifi', 'bluetooth',
+                  'usb_type_c', 'fast_charging', 'fast_wireless_charging', 'reverse_wireless_charging', 'is_available']
+        
+
+class LaptopForm(forms.ModelForm):
+    class Meta:
+        model = Laptop
+        fields = ['name', 'price', 'description', 'category', 'shop_owner', 'screen_size', 'operating_system', 
+                  'storage', 'ram', 'processor', 'graphics_card', 'battery_life', 'display', 'os', 'wifi', 'bluetooth', 
+                  'usb_type_c', 'is_available', 'slug', 'brand']
+        
+
+class AccessoryForm(forms.ModelForm):
+    class Meta:
+        model = Accessory
+        fields = ['name', 'price', 'description', 'category', 'shop_owner', 'mobile_phone', 'type', 'compatibility', 
+                  'is_available', 'slug']
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['total_amount', 'status']
+
+class SellerReviewForm(forms.ModelForm):
+    class Meta:
+        model = SellerReview
+        fields = ['rating', 'review_text']
+
+
+urls.py>
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.index, name='index'),
     path('phone/<slug:slug>/', views.phone_detail, name='phone_detail'),
-]
+    path('laptops/', views.laptops, name='laptops'),
+    path('laptops/<slug:slug>/', views.laptop_detail, name='laptop_detail'),
+    path('accessories/', views.accessories, name='accessories'),
+    path('accessories/<slug:slug>/', views.accessory_detail, name='accessory_detail'),
+    path('smartphones/', views.smartphones_category, name='smartphones_category'),
+    path('laptops/', views.laptops_category, name='laptops_category'),
+    path('accessories/', views.accessories_category, name='accessories_category'),
+    path('phones/', views.mobile_phone_list, name='phones'),
+    path('phones/<slug:slug>/', views.phone_detail, name='phone_detail'),
+]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
-templates,
-base.html,
+Templates,
+base.html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -461,49 +506,76 @@ base.html,
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 min-h-screen flex flex-col">
     <!-- Navbar -->
-    <header class="bg-gradient-to-r from-blue-600 via-purple-500 to-pink-600 text-white shadow-lg sticky top-0 z-50">
+    <header class="bg-white shadow-md sticky top-0 z-50">
         <nav class="container mx-auto flex justify-between items-center py-4 px-6 lg:px-12">
             <!-- Logo -->
-            <a href="{% url 'index' %}" class="flex items-center space-x-2 text-3xl font-extrabold tracking-wide">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+            <a href="{% url 'index' %}" class="flex items-center space-x-3 text-3xl font-extrabold">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0L15.09 8.26H23.18L17.55 13.47L20.64 21.74L12 16.52L3.36 21.74L6.45 13.47L0.82 8.26H8.91L12 0Z" />
                 </svg>
-                <span>Mobile <span class="text-yellow-300">Store</span></span>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                    Mobile<span class="text-indigo-600">Store</span>
+                </span>
             </a>
             <!-- Links for Large Screens -->
             <ul class="hidden lg:flex space-x-8 items-center text-lg font-medium">
-                <li><a href="{% url 'index' %}" class="hover:text-yellow-300 transition duration-300">Home</a></li>
-                <li><a href="#" class="hover:text-yellow-300 transition duration-300">About</a></li>
-                <li><a href="#" class="hover:text-yellow-300 transition duration-300">Contact</a></li>
+                <li><a href="{% url 'index' %}" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">Home</a></li>
+                <li><a href="{% url 'phones' %}" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">Mobiles</a></li>
+                <li><a href="{% url 'laptops' %}" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">Laptops</a></li>
+                <li><a href="{% url 'accessories' %}" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">Accessories</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">About</a></li>
                 <li>
                     {% if user.is_authenticated %}
-                        <a href="#" class="hover:text-yellow-300 transition duration-300">Hi, {{ user.username }}</a>
+                        <a href="#" class="inline-flex items-center px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-300">
+                            <span class="mr-2">Hi, {{ user.username }}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
                     {% else %}
-                        <a href="/admin/login/" class="hover:text-yellow-300 transition duration-300">Login</a>
+                        <a href="/admin/login/" class="inline-flex items-center px-6 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-300">
+                            <span class="mr-2">Login</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
                     {% endif %}
                 </li>
             </ul>
             <!-- Mobile Menu Toggle -->
-            <button id="menuToggle" class="lg:hidden text-white focus:outline-none">
+            <button id="menuToggle" class="lg:hidden text-gray-700 focus:outline-none">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
                 </svg>
             </button>
         </nav>
         <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden bg-gradient-to-b from-blue-600 via-purple-500 to-pink-600 text-white lg:hidden">
-            <ul class="space-y-4 py-4 px-6">
-                <li><a href="{% url 'index' %}" class="block text-lg hover:text-yellow-300 transition duration-300">Home</a></li>
-                <li><a href="#" class="block text-lg hover:text-yellow-300 transition duration-300">About</a></li>
-                <li><a href="#" class="block text-lg hover:text-yellow-300 transition duration-300">Contact</a></li>
+        <div id="mobileMenu" class="hidden bg-white lg:hidden border-t border-gray-100">
+            <ul class="space-y-4 py-6 px-6">
+                <li><a href="{% url 'index' %}" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">Home</a></li>
+                <li><a href="{% url 'phones' %}" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">Mobiles</a></li>
+                <li><a href="{% url 'laptops' %}" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">Laptops</a></li>
+                <li><a href="{% url 'accessories' %}" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">Accessories</a></li>
+                <li><a href="#" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">About</a></li>
                 <li>
                     {% if user.is_authenticated %}
-                        <a href="#" class="block text-lg hover:text-yellow-300 transition duration-300">Hi, {{ user.username }}</a>
+                        <a href="#" class="inline-flex items-center px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-300">
+                            <span class="mr-2">Hi, {{ user.username }}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
                     {% else %}
-                        <a href="/admin/login/" class="block text-lg hover:text-yellow-300 transition duration-300">Login</a>
+                        <a href="/admin/login/" class="inline-flex items-center px-6 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-300">
+                            <span class="mr-2">Login</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
                     {% endif %}
                 </li>
             </ul>
@@ -511,31 +583,106 @@ base.html,
     </header>
     
     <!-- Main Content -->
-    <main class="container mx-auto py-8">
+    <main class="container mx-auto py-8 px-6 lg:px-12 flex-grow">
         {% block content %}
         {% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gradient-to-r from-blue-600 via-purple-500 to-pink-600 text-white py-6">
-        <div class="container mx-auto text-center">
-            <p>&copy; 2025 Mobile Store. All rights reserved.</p>
+    <footer class="bg-white shadow-inner mt-12">
+        <div class="container mx-auto py-8 px-6 lg:px-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">About Us</h3>
+                    <p class="text-gray-600">Your trusted destination for the latest mobile devices and accessories.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li><a href="#" class="hover:text-indigo-600 transition-colors duration-300">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-indigo-600 transition-colors duration-300">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-indigo-600 transition-colors duration-300">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Connect With Us</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-.422-.36-1.057-.413-2.227-.057-1.266-.07-1.646-.07-4.85s.015-3.585.074-4.85c.061-1.17.256-1.805.421-2.227.224-.562.479-.96.899-1.382.419-.419.824-.679 1.38-.896.42-.164 1.055-.36 2.225-.413 1.265-.057 1.645-.07 4.849-.07z"/>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 mt-8 pt-8 text-center text-gray-600">
+                <p>&copy; 2025 Mobile Store. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
     <script>
-        // Mobile Menu Toggle
+        // Mobile Menu Toggle with Animation
         const menuToggle = document.getElementById('menuToggle');
         const mobileMenu = document.getElementById('mobileMenu');
 
         menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
+            if (mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.classList.add('animate__animated', 'animate__fadeIn');
+            } else {
+                mobileMenu.classList.add('animate__animated', 'animate__fadeOut');
+                setTimeout(() => {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('animate__animated', 'animate__fadeOut');
+                }, 500);
+            }
+        });
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add scroll animation for header
+        const header = document.querySelector('header');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll <= 0) {
+                header.classList.remove('shadow-lg');
+                return;
+            }
+            
+            if (currentScroll > lastScroll) {
+                header.classList.add('shadow-lg');
+            } else {
+                header.classList.remove('shadow-lg');
+            }
+            
+            lastScroll = currentScroll;
         });
     </script>
 </body>
 </html>
 
-index.html,
+index.html>
 {% extends 'base.html' %}
 {% load static %}  <!-- Add this line to load the static tag -->
 {% block content %}
@@ -591,33 +738,93 @@ index.html,
         {% endfor %}
     </div>
 </section>
+<section id="laptops" class="mb-12">
+    <h2 class="text-3xl font-bold mb-6 text-center">Available Laptops</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for laptop in laptops %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            {% if laptop.images.first %}
+                <img src="{{ laptop.images.first.image.url }}" alt="{{ laptop.name }}" class="w-full h-60 object-contain bg-gray-100">
+            {% else %}
+                <img src="{% static 'default_image.jpg' %}" alt="Default Image" class="w-full h-60 object-contain bg-gray-100">
+            {% endif %}
+            <div class="p-4">
+                <h3 class="text-xl font-bold mb-2">{{ laptop.name }}</h3>
+                <p class="text-gray-600 mb-4">{{ laptop.description|truncatewords:10 }}</p>
+                <p class="font-bold text-lg text-blue-600 mb-4">PKR {{ laptop.price }}</p>
+                <a href="{% url 'laptop_detail' laptop.slug %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+<section class="mb-12">
+    <h2 class="text-3xl font-bold mb-6 text-center">Available Accessories</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for accessory in accessories %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            {% if accessory.images.first %}
+                <img src="{{ accessory.images.first.image.url }}" alt="{{ accessory.name }}" class="w-full h-60 object-contain bg-gray-100">
+            {% else %}
+                <img src="{% static 'default_image.jpg' %}" alt="Default Image" class="w-full h-60 object-contain bg-gray-100">
+            {% endif %}
+            <div class="p-4">
+                <h3 class="text-xl font-bold mb-2">{{ accessory.name }}</h3>
+                <p class="text-gray-600 mb-4">{{ accessory.description|truncatewords:10 }}</p>
+                <p class="font-bold text-lg text-blue-600 mb-4">PKR {{ accessory.price }}</p>
+                <a href="{% url 'accessory_detail' accessory.slug %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
 
 <!-- Top Categories Section -->
 <section class="bg-gray-50 py-12">
     <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Top Categories</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
+        <!-- Smartphones Category -->
+        <a href="{% url 'smartphones_category' %}" class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
             <img src="{% static 'category_smartphones.jpg' %}" alt="Smartphones" class="w-full h-40 object-cover rounded-lg mb-4">
             <h3 class="text-xl font-semibold mb-2">Smartphones</h3>
             <p class="text-gray-600">Explore the latest smartphones from top brands.</p>
-        </div>
-        <div class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
-            <img src="{% static 'category_tablets.jpg' %}" alt="Tablets" class="w-full h-40 object-cover rounded-lg mb-4">
-            <h3 class="text-xl font-semibold mb-2">Tablets</h3>
-            <p class="text-gray-600">Find your next tablet for work or entertainment.</p>
-        </div>
-        <div class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
-            <img src="{% static 'category_accessories.jpg' %}" alt="Accessories" class="w-full h-40 object-cover rounded-lg mb-4">
-            <h3 class="text-xl font-semibold mb-2">Accessories</h3>
-            <p class="text-gray-600">Shop for cases, chargers, and other accessories.</p>
-        </div>
-        <div class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
+        </a>
+        <!-- Laptops Category -->
+        <a href="{% url 'laptops_category' %}" class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
             <img src="{% static 'category_laptops.jpg' %}" alt="Laptops" class="w-full h-40 object-cover rounded-lg mb-4">
             <h3 class="text-xl font-semibold mb-2">Laptops</h3>
             <p class="text-gray-600">Browse our range of laptops for every need.</p>
-        </div>
+        </a>
+        <!-- Accessories Category -->
+        <a href="{% url 'accessories_category' %}" class="category-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
+            <img src="{% static 'category_accessories.jpg' %}" alt="Accessories" class="w-full h-40 object-cover rounded-lg mb-4">
+            <h3 class="text-xl font-semibold mb-2">Accessories</h3>
+            <p class="text-gray-600">Shop for cases, chargers, and other accessories.</p>
+        </a>
     </div>
 </section>
+
+
+
+
+<!-- Template for Category Page -->
+    <div class="py-12">
+        <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">{{ category_name }} Products</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for product in products %}
+                <div class="product-card bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-40 object-cover rounded-lg mb-4">
+                    <h3 class="text-xl font-semibold mb-2">{{ product.name }}</h3>
+                    <p class="text-gray-600">{{ product.description }}</p>
+                    <p class="text-lg font-bold text-gray-800">{{ product.price }} PKR</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 
 <!-- FAQ Section -->
 <section class="bg-white py-12">
@@ -684,157 +891,78 @@ index.html,
 
 {% endblock %}
 
-phone_detail.html,
-{% extends 'base.html' %}
 
-{% block content %}
-<div class="container mx-auto p-6">
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <div class="flex flex-col lg:flex-row">
-            <!-- Phone Image Section -->
-            <div class="lg:w-1/2 p-6">
-                <!-- Main Preview Image -->
-                <div class="w-full h-96 mb-4">
-                    <img id="previewImage" src="{{ phone.images.first.image.url }}" alt="{{ phone.name }}" class="w-full h-full object-contain rounded-lg border">
-                </div>
 
-                <!-- Thumbnail Images -->
-                <div class="mt-4 flex space-x-4">
-                    {% for image in images %}
-                    <div class="w-20 h-20 border-2 border-gray-300 rounded-lg hover:border-blue-500 transition">
-                        <img src="{{ image.image.url }}" alt="Image for {{ phone.name }}" class="w-full h-full object-contain cursor-pointer" onmouseover="updatePreview('{{ image.image.url }}')">
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
 
-            <!-- Phone Details Section -->
-            <div class="lg:w-1/2 p-6 lg:pl-12">
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ phone.name }}</h1>
-                <p class="text-lg text-gray-600 mb-4">{{ phone.description }}</p>
-
-                <div class="space-y-3">
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Price:</span>
-                        <span class="text-xl font-bold text-green-600">PKR {{ phone.price }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Storage:</span>
-                        <span class="text-lg text-gray-800">{{ phone.storage }} GB</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">RAM:</span>
-                        <span class="text-lg text-gray-800">{{ phone.ram }} GB</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Battery:</span>
-                        <span class="text-lg text-gray-800">{{ phone.battery_capacity }} mAh</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">PTA Approved:</span>
-                        <span class="text-lg text-gray-800">{{ phone.pta_approved|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">5G Supported:</span>
-                        <span class="text-lg text-gray-800">{{ phone.five_g_supported|yesno:"Yes,No" }}</span>
-                    </div>
-                    <!-- Additional Attributes -->
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Chipset:</span>
-                        <span class="text-lg text-gray-800">{{ phone.chipset }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Camera:</span>
-                        <span class="text-lg text-gray-800">{{ phone.camera }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">Display:</span>
-                        <span class="text-lg text-gray-800">{{ phone.display }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">OS:</span>
-                        <span class="text-lg text-gray-800">{{ phone.os }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-semibold text-gray-700">SIM:</span>
-                        <span class="text-lg text-gray-800">{{ phone.sim }}</span>
-                    </div>
-                </div>
-
-                <div class="mt-6">
-                    <a href="#" class="bg-green-600 text-white py-3 px-6 rounded-lg shadow hover:bg-green-700 transition">Add to Cart</a>
-                </div>
-            </div>
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto flex justify-between items-center py-4 px-6 lg:px-12">
+            <!-- Logo -->
+            <a href="{% url 'index' %}" class="flex items-center space-x-3 text-3xl font-extrabold">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0L15.09 8.26H23.18L17.55 13.47L20.64 21.74L12 16.52L3.36 21.74L6.45 13.47L0.82 8.26H8.91L12 0Z" />
+                </svg>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                    Mobile<span class="text-indigo-600">Store</span>
+                </span>
+            </a>
+            <!-- Links for Large Screens -->
+            <ul class="hidden lg:flex space-x-8 items-center text-lg font-medium">
+                <li><a href="{% url 'index' %}" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">Home</a></li>
+                <li><a href="{% url 'phones' %}" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">Mobiles</a></li>
+                <li><a href="{% url 'laptops' %}" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">Laptops</a></li>
+                <li><a href="{% url 'accessories' %}" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">Accessories</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-indigo-600 transition-colors duration-300">About</a></li>
+                <li>
+                    {% if user.is_authenticated %}
+                        <a href="#" class="inline-flex items-center px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-300">
+                            <span class="mr-2">Hi, {{ user.username }}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    {% else %}
+                        <a href="/admin/login/" class="inline-flex items-center px-6 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-300">
+                            <span class="mr-2">Login</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    {% endif %}
+                </li>
+            </ul>
+            <!-- Mobile Menu Toggle -->
+            <button id="menuToggle" class="lg:hidden text-gray-700 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </nav>
+        
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden bg-white lg:hidden border-t border-gray-100">
+            <ul class="space-y-4 py-6 px-6">
+                <li><a href="{% url 'index' %}" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">Home</a></li>
+                <li><a href="{% url 'phones' %}" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">Mobiles</a></li>
+                <li><a href="{% url 'laptops' %}" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">Laptops</a></li>
+                <li><a href="{% url 'accessories' %}" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">Accessories</a></li>
+                <li><a href="#" class="block text-gray-700 hover:text-indigo-600 transition-colors duration-300">About</a></li>
+                <li>
+                    {% if user.is_authenticated %}
+                        <a href="#" class="inline-flex items-center px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-300">
+                            <span class="mr-2">Hi, {{ user.username }}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    {% else %}
+                        <a href="/admin/login/" class="inline-flex items-center px-6 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-300">
+                            <span class="mr-2">Login</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    {% endif %}
+                </li>
+            </ul>
         </div>
-    </div>
-
-    <!-- Reviews Section -->
-    <div class="mt-12">
-        <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
-        {% if reviews %}
-        <div class="space-y-6">
-            {% for review in reviews %}
-            <div class="p-6 bg-gray-100 rounded-lg shadow-md">
-                <div class="flex justify-between items-center">
-                    <span class="font-semibold text-gray-700">{{ review.customer.user.username }}</span>
-                    <span class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</span>
-                </div>
-                <p class="mt-2 text-gray-700">{{ review.review_text }}</p>
-
-                <div class="mt-4 flex items-center">
-                    <span class="font-semibold text-gray-700">Rating:</span>
-                    <div class="flex ml-2">
-                        {% for i in rating_range %}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if i <= review.rating %}yellow{% else %}gray{% endif %}" class="bi bi-star-fill" viewBox="0 0 16 16">
-                            <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z" />
-                        </svg>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p class="text-gray-500">No reviews yet. Be the first to add a review!</p>
-        {% endif %}
-    </div>
-
-    <!-- JavaScript to Handle Image Hover Preview -->
-    <script>
-        function updatePreview(imageUrl) {
-            const previewImage = document.getElementById('previewImage');
-            previewImage.src = imageUrl;
-        }
-    </script>
-</div>
-
-    <!-- Add Review Section -->
-    <div class="mt-12">
-        <h4 class="text-xl font-semibold mb-4">Add Your Review</h4>
-        <form method="post" class="space-y-4 bg-white p-6 rounded-lg shadow-md">
-            {% csrf_token %}
-            <div>
-                <label for="review-text" class="block text-lg font-semibold text-gray-700">Your Review</label>
-                <textarea name="review_text" id="review-text" rows="4" class="w-full border-gray-300 rounded-lg p-3 mt-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Write your review here..."></textarea>
-            </div>
-
-            <div>
-                <label for="rating" class="block text-lg font-semibold text-gray-700">Your Rating</label>
-                <div class="flex items-center mt-2">
-                    <span class="font-semibold text-gray-700 mr-2">Rating:</span>
-                    <div class="flex">
-                        {% for i in rating_range %}
-                        <input type="radio" name="rating" value="{{ i }}" id="rating_{{ i }}" class="hidden" {% if form.rating.value == i %}checked{% endif %} />
-                        <label for="rating_{{ i }}" class="text-lg text-gray-700 cursor-pointer mr-4" onclick="setRating({{ i }})">
-                            <span id="num_{{ i }}" class="text-lg" {% if form.rating.value == i %}style="color: yellow; font-weight: bold;"{% endif %}>{{ i }}</span>
-                        </label>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition">Submit Review</button>
-        </form>
-    </div>
-</div>
-{% endblock %}
+    </header>

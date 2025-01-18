@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block extra_head %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    .form-label-float {
+        @apply absolute left-3 -top-2.5 px-1 text-sm transition-all duration-300 bg-white;
+    }
+    .form-input:focus + .form-label-float,
+    .form-input:not(:placeholder-shown) + .form-label-float {
+        @apply text-indigo-600 transform -translate-y-4 scale-90;
+    }
+</style>
+{% endblock extra_head %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-tr from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">
+    <div class="w-full max-w-md">
+        <!-- Header Section -->
+        <div class="text-center mb-8">
+            <h2 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-3">
+                Welcome Back
+            </h2>
+            <p class="text-gray-600 text-lg">Sign in to your account</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-sm bg-opacity-90">
+            <form method="post" class="space-y-6" id="loginForm">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="relative">
+                    <div class="group">
+                        {{ field|add_class:"peer w-full px-4 py-3 rounded-xl border-2 border-gray-200 outline-none transition-all duration-300 placeholder-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" }}
+                        <label for="{{ field.id_for_label }}" class="form-label-float">
+                            {{ field.label }}
+                        </label>
+                    </div>
+                    {% if field.errors %}
+                    <div class="mt-1.5 text-rose-500 text-sm animate-fade-in">
+                        {% for error in field.errors %}
+                            <p class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
+                        <span class="ml-2 text-gray-600">Remember me</span>
+                    </label>
+                    <a href="{% url 'password_reset_request' %}" class="text-indigo-600 hover:text-indigo-500 transition-colors">
+                        Forgot your password?
+                    </a>
+                </div>
+
+                <!-- Login Button -->
+                <div class="pt-2">
+                    <button type="submit" class="group relative w-full flex items-center justify-center px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium text-lg transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-lg active:translate-y-0">
+                        <span class="mr-2 group-hover:mr-3 transition-all">Sign In</span>
+                        <i class="fas fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Divider -->
+            <div class="my-8 flex items-center">
+                <div class="flex-1 border-t border-gray-200"></div>
+                <span class="px-4 text-gray-500 text-sm">or</span>
+                <div class="flex-1 border-t border-gray-200"></div>
+            </div>
+
+            <!-- Sign Up Link -->
+            <div>
+                <a href="{% url 'signup' %}" class="block w-full text-center px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium transition-all duration-300 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span class="inline-flex items-center">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Create New Account
+                    </span>
+                </a>
+            </div>
+
+            <!-- Social Login -->
+            <div class="mt-6 grid grid-cols-2 gap-4">
+                <button class="flex items-center justify-center px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                    <i class="fab fa-google text-red-500 mr-2"></i>
+                    <span class="text-sm">Google</span>
+                </button>
+                <button class="flex items-center justify-center px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                    <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                    <span class="text-sm">Facebook</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer Text -->
+        <p class="mt-6 text-center text-gray-500 text-sm">
+            Protected by reCAPTCHA and subject to the Privacy Policy and Terms of Service
+        </p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const inputs = form.querySelectorAll('input:not([type="checkbox"])');
+
+    // Initial state check for filled inputs
+    inputs.forEach(input => {
+        if (input.value) {
+            input.classList.add('has-value');
+        }
+    });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let hasError = false;
+
+        inputs.forEach(input => {
+            const errorDiv = input.closest('.relative').querySelector('.text-rose-500');
+            if (errorDiv) errorDiv.remove();
+
+            if (input.required && !input.value.trim()) {
+                hasError = true;
+                const error = document.createElement('div');
+                error.className = 'mt-1.5 text-rose-500 text-sm animate-fade-in';
+                error.innerHTML = `
+                    <p class="flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        This field is required
+                    </p>
+                `;
+                input.closest('.relative').appendChild(error);
+                input.classList.add('border-rose-500');
+            }
+
+            if (input.type === 'email' && input.value.trim()) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(input.value.trim())) {
+                    hasError = true;
+                    const error = document.createElement('div');
+                    error.className = 'mt-1.5 text-rose-500 text-sm animate-fade-in';
+                    error.innerHTML = `
+                        <p class="flex items-center">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            Please enter a valid email address
+                        </p>
+                    `;
+                    input.closest('.relative').appendChild(error);
+                    input.classList.add('border-rose-500');
+                }
+            }
+        });
+
+        if (hasError) {
+            e.preventDefault();
+        }
+    });
+
+    // Clear error states on input
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const errorDiv = this.closest('.relative').querySelector('.text-rose-500');
+            if (errorDiv) errorDiv.remove();
+            this.classList.remove('border-rose-500');
+        });
+    });
+});
+</script>
+{% endblock content %}
