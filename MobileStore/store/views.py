@@ -200,18 +200,21 @@ def index(request):
     })
 
 def phone_detail(request, slug):
+    # Get the cart item count if the user is authenticated
     cart_item_count = 0
-    # Check if the user is authenticated
     if request.user.is_authenticated:
-        # Get or create the cart for the logged-in user
         cart, created = Cart.objects.get_or_create(user=request.user)
-        # Update the cart item count
-        cart_item_count = cart.items.count()
+        cart_item_count = cart.items.count()  # Get the count of items in the cart
+    
+    # Get the phone object based on the slug
     phone = get_object_or_404(MobilePhone, slug=slug)
+
+    # Get related reviews, images, and advertisements
     reviews = phone.reviews.all()
-    images = phone.images.all()  # Get all images associated with the phone
+    images = phone.images.all()
     advertisements = Advertisement.objects.filter(mobile_phone=phone, is_active=True)
 
+    # Handle the review submission form
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
@@ -220,20 +223,22 @@ def phone_detail(request, slug):
                 review.user = request.user
                 review.mobile_phone = phone
                 review.save()
-                return redirect('phone_detail', slug=slug)
+                return redirect('phone_detail', slug=slug)  # Redirect to the same page after submission
             else:
                 return redirect('login')  # Redirect unauthenticated users to login
     else:
         form = ReviewForm()
 
+    # Rating range for the form
     rating_range = range(1, 6)
 
+    # Pass all necessary data to the template
     return render(request, 'phone_detail.html', {
         'phone': phone, 
         'reviews': reviews, 
         'form': form,
         'rating_range': rating_range,
-        'images': images,  # Pass images to template
+        'images': images,
         'advertisements': advertisements,
         'cart_item_count': cart_item_count
     })
@@ -485,7 +490,6 @@ def create_accessory(request):
 
 
 
-
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -503,6 +507,8 @@ def add_to_cart(request, product_id):
 
     # Redirect to cart view or product page as required
     return redirect('view_cart')  # Replace 'view_cart' with the actual URL name for the cart page
+
+
 
 @login_required
 def view_cart(request):
@@ -604,5 +610,19 @@ def get_cart_items(request):
 
 
 def product_list(request):
-    products = Product.objects.all()
-    return render(request, 'index.html', {'products': products})
+    cart_item_count = 0
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart_item_count = cart.items.count()
+
+    # You can filter products by category
+    category_filter = request.GET.get('category', None)
+    if category_filter:
+        products = MobilePhone.objects.filter(category=category_filter)
+    else:
+        products = MobilePhone.objects.all()
+
+    return render(request, 'product_list.html', {
+        'products': products,
+        'cart_item_count': cart_item_count,
+    })
