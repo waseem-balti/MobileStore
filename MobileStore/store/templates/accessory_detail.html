@@ -1,4 +1,5 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="container mx-auto p-6">
@@ -10,10 +11,11 @@
                 <div class="relative w-full h-[500px] mb-6">
                     {% if phone %}
                         <img id="previewImage" src="{{ phone.images.first.image.url }}" alt="{{ phone.name }}" 
-                             class="w-full h-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-105">
+                             class="w-full h-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-105"  width="500" height="500>
                     {% elif accessory %}
                         <img id="previewImage" src="{{ accessory.images.first.image.url }}" alt="{{ accessory.name }}" 
-                             class="w-full h-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-105">
+                             class="w-full h-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-105"
+                             width="500" height="500">
                     {% endif %}
                     <canvas id="zoomCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none rounded-xl"></canvas>
                 </div>
@@ -25,7 +27,8 @@
                             <img src="{{ image.image.url }}" 
                                  alt="Image {{ forloop.counter }} for {{ phone.name }}" 
                                  class="w-full h-full object-contain cursor-pointer" 
-                                 onmouseover="updatePreview('{{ image.image.url }}')">
+                                 onmouseover="updatePreview('{{ image.image.url }}')"
+                                 width="500" height="500">
                         </div>
                         {% endfor %}
                     {% elif accessory %}
@@ -34,7 +37,8 @@
                             <img src="{{ image.image.url }}" 
                                  alt="Image {{ forloop.counter }} for {{ accessory.name }}" 
                                  class="w-full h-full object-contain cursor-pointer" 
-                                 onmouseover="updatePreview('{{ image.image.url }}')">
+                                 onmouseover="updatePreview('{{ image.image.url }}')
+                                  width="500" height="500">
                         </div>
                         {% endfor %}
                     {% endif %}
@@ -127,9 +131,14 @@
                 {% endif %}
 
                 <!-- Add to Cart Button -->
-                <button class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
-                    Add to Cart
-                </button>
+                <form method="post" action="{% url 'add_to_cart' accessory.id %}">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+                        Add to Cart
+                    </button>
+                </form>              
+
             </div>
         </div>
     </div>
@@ -269,4 +278,4 @@
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('load', resizeCanvas);
 </script>
-{% endblock %}
+{% endblock content %}

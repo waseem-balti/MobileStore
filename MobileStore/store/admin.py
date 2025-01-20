@@ -5,8 +5,9 @@ from .models import (
     Transaction, Advertisement, Inquiry,Profile, Address, PaymentMethod, Wishlist, Order, OrderItem, 
     PasswordResetToken, ShopOwner, Customer, Category, MobilePhone, 
     SellerReview, Notification, Transaction, Advertisement, Inquiry, Tablet,
-    Image
+    Image, Cart, CartItem, Product
 )
+from .forms import CartItemAdminForm
 
 # Inline for Images
 class MobilePhoneImageInline(admin.TabularInline):
@@ -189,3 +190,41 @@ class TabletAdmin(admin.ModelAdmin):
     list_display = ['name', 'price', 'category', 'shop_owner', 'is_available']
     search_fields = ['name', 'category__name', 'shop_owner__name']
     list_filter = ['is_available']
+
+
+@admin.register(Cart)
+class CartAdmin(admin.ModelAdmin):
+    list_display = ('user', 'created_at', 'total_items', 'total_price_display')
+    search_fields = ('user__username', 'user__email')
+    readonly_fields = ('created_at',)
+
+    def total_items(self, obj):
+        return obj.items.count()
+    total_items.short_description = 'Total Items'
+
+    def total_price_display(self, obj):
+        return f"PKR {obj.total_price():,.2f}"  # Display total price formatted
+    total_price_display.short_description = 'Total Price'
+
+
+
+
+@admin.register(CartItem)
+class CartItemAdmin(admin.ModelAdmin):
+    form = CartItemAdminForm
+    list_display = ('cart', 'product', 'quantity', 'total_price_display')
+    search_fields = ('cart__user__username', 'product__name')
+    list_filter = ('cart__user', 'product')
+
+    def total_price_display(self, obj):
+        return f"PKR {obj.total_price():,.2f}"  # Display total price formatted
+    total_price_display.short_description = 'Total Price'
+
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category', 'price', 'is_available')  # Display important fields
+    list_filter = ('category', 'is_available')  # Add filters for category and availability
+    search_fields = ('name', 'description')  # Enable search by name and description
+    ordering = ('category', 'name')  # Order products by category and name

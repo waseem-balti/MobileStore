@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Create Laptop</title>
+    <meta name="description" content="Create a new laptop entry in the store.">
+    <meta name="keywords" content="laptop, create, store, entry">
+</head>
+<body>
+    <h1>Create Laptop</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>

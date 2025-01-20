@@ -1,5 +1,5 @@
 from django import forms
-from .models import MobilePhone, Review, Inquiry, Order, SellerReview, Category, ShopOwner, Customer, Advertisement, Image, Laptop, Accessory, Product
+from .models import Address, MobilePhone, Notification, OrderItem, PasswordResetToken, PaymentMethod, Review, Inquiry, Order, SellerReview, Category, ShopOwner, Customer, Advertisement, Image, Laptop, Accessory, Product, Tablet, Transaction, Wishlist, Cart, CartItem
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth.models import User
 from django import forms
@@ -19,10 +19,6 @@ class ProfileUpdateForm(forms.ModelForm):
         model = Profile
         fields = ['avatar', 'phone', 'address', 'bio']
 
-class ReviewForm(forms.ModelForm):
-    class Meta:
-        model = Review
-        fields = ['review_text', 'rating']
 
 class InquiryForm(forms.ModelForm):
     class Meta:
@@ -66,15 +62,7 @@ class AccessoryForm(forms.ModelForm):
         fields = ['name', 'price', 'description', 'category', 'shop_owner', 'mobile_phone', 'type', 'compatibility', 
                   'is_available', 'slug']
 
-class OrderForm(forms.ModelForm):
-    class Meta:
-        model = Order
-        fields = ['total_amount', 'status']
 
-class SellerReviewForm(forms.ModelForm):
-    class Meta:
-        model = SellerReview
-        fields = ['rating', 'review_text']
 
 
 
@@ -100,3 +88,146 @@ class CustomSetPasswordForm(SetPasswordForm):
         fields = ['new_password1', 'new_password2']
 
 
+
+
+
+
+
+# ShopOwner Form
+class ShopOwnerForm(forms.ModelForm):
+    class Meta:
+        model = ShopOwner
+        fields = ['store_name', 'user', 'phone_number', 'rating']
+
+# Customer Form
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['user', 'phone_number']
+
+# Category Form
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'slug']
+
+
+
+
+# Image Form
+class ImageForm(forms.ModelForm):
+    class Meta:
+        model = Image
+        fields = ['mobile_phone', 'laptop', 'accessory', 'image', 'is_featured']
+
+# Review Form
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['rating', 'review_text']
+
+    def clean_review_text(self):
+        review_text = self.cleaned_data.get('review_text')
+        if len(review_text) < 10:
+            raise forms.ValidationError("Review must be at least 10 characters.")
+        return review_text
+
+# Transaction Form
+class TransactionForm(forms.ModelForm):
+    class Meta:
+        model = Transaction
+        fields = ['customer', 'mobile_phone', 'amount', 'status']
+
+# Advertisement Form
+class AdvertisementForm(forms.ModelForm):
+    class Meta:
+        model = Advertisement
+        fields = ['mobile_phone', 'shop_owner', 'start_date', 'end_date', 'is_active']
+
+# Inquiry Form
+class InquiryForm(forms.ModelForm):
+    class Meta:
+        model = Inquiry
+        fields = ['customer', 'mobile_phone', 'message']
+
+# Profile Form
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['user', 'phone', 'address', 'bio']
+
+# Address Form
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = ['user', 'street_address', 'city', 'state', 'country', 'postal_code']
+
+# PaymentMethod Form
+class PaymentMethodForm(forms.ModelForm):
+    class Meta:
+        model = PaymentMethod
+        fields = ['user', 'card_number', 'expiry_date', 'cardholder_name']
+
+# Wishlist Form
+class WishlistForm(forms.ModelForm):
+    class Meta:
+        model = Wishlist
+        fields = ['user', 'product_name', 'product_category']
+
+# Order Form
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['user', 'order_number', 'status', 'total_amount']
+
+# OrderItem Form
+class OrderItemForm(forms.ModelForm):
+    class Meta:
+        model = OrderItem
+        fields = ['order', 'product', 'quantity', 'price']
+
+# PasswordResetToken Form
+class PasswordResetTokenForm(forms.ModelForm):
+    class Meta:
+        model = PasswordResetToken
+        fields = ['user', 'is_used', 'expires_at']
+
+# SellerReview Form
+class SellerReviewForm(forms.ModelForm):
+    class Meta:
+        model = SellerReview
+        fields = ['shop_owner', 'customer', 'rating', 'review_text']
+
+# Notification Form
+class NotificationForm(forms.ModelForm):
+    class Meta:
+        model = Notification
+        fields = ['user', 'message', 'is_read']
+
+# Tablet Form
+class TabletForm(forms.ModelForm):
+    class Meta:
+        model = Tablet
+        fields = ['name', 'price', 'category', 'shop_owner', 'is_available']
+
+
+
+class CartItemAdminForm(forms.ModelForm):
+    class Meta:
+        model = CartItem
+        fields = ['cart', 'product', 'quantity']
+
+    # Limit the dropdown options to only available carts and products
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['cart'].queryset = Cart.objects.all()
+        self.fields['product'].queryset = Product.objects.filter(is_available=True)
+
+
+
+
+class CheckoutForm(forms.Form):
+    full_name = forms.CharField(max_length=255, label='Full Name')
+    address = forms.CharField(widget=forms.Textarea, label='Shipping Address')
+    phone_number = forms.CharField(max_length=15, label='Phone Number')
+    payment_method = forms.ChoiceField(choices=[('cash_on_delivery', 'Cash on Delivery'), ('credit_card', 'Credit Card')], label='Payment Method')

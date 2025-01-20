@@ -1,0 +1,79 @@
+<!-- filepath: /D:/Mega/Backup and Sync/Coding/MobileStore/MobileStore/store/templates/cart.html -->
+{% extends "base.html" %}
+{% load custom_filters %}
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+    
+    {% if items %}
+    <!-- Cart Items Table -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Product</th>
+                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Quantity</th>
+                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Price</th>
+                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Total</th>
+                        <th class="px-6 py-4 text-right text-sm font-semibold text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for item in items %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <!-- Product Details -->
+                        <td class="px-6 py-4 whitespace-nowrap flex items-center space-x-4">
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="h-16 w-16 object-cover rounded-md" height="64" width="64">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ item.product.name }}</div>
+                                <div class="text-sm text-gray-500">SKU: {{ item.product.sku }}</div>
+                            </div>
+                        </td>
+                        <!-- Quantity -->
+                        <td class="px-6 py-4 text-center">
+                            <form method="post" action="{% url 'update_cart_item' item.id %}" class="inline-flex items-center space-x-2">
+                                {% csrf_token %}
+                                <button name="action" value="decrease" class="px-2 py-1 border rounded-md text-gray-700 hover:bg-gray-200">-</button>
+                                <span class="px-3 py-1 border rounded-md bg-gray-100 text-gray-800">{{ item.quantity }}</span>
+                                <button name="action" value="increase" class="px-2 py-1 border rounded-md text-gray-700 hover:bg-gray-200">+</button>
+                            </form>
+                        </td>
+                        <!-- Price -->
+                        <td class="px-6 py-4 text-center text-sm text-gray-900">PKR {{ item.product.price }}</td>
+                        <!-- Total -->
+                        <td class="px-6 py-4 text-center text-sm font-semibold text-gray-900">PKR {{ item.total_price }}</td>
+                        <!-- Actions -->
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'remove_cart_item' item.id %}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:text-red-800 focus:outline-none">
+                                Remove
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+        <div class="flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-gray-900">Order Summary</h2>
+            <div class="text-2xl font-bold text-gray-900">PKR {{ total_price }}</div>
+        </div>
+        <a href="{% url 'checkout' %}" class="inline-flex items-center mt-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+            Proceed to Checkout
+        </a>
+    </div>
+    {% else %}
+    <!-- Empty Cart Message -->
+    <div class="text-center py-12">
+        <p class="text-gray-500 text-lg">Your cart is empty.</p>
+        <a href="{% url 'product_list' %}" class="text-blue-600 hover:text-blue-800 font-semibold">
+            Browse Products
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}

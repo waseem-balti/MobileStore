@@ -1,4 +1,5 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="container mx-auto p-6">
@@ -10,7 +11,8 @@
                 <div class="relative w-full h-[500px] mb-6">
                     <img id="previewImage" src="{{ phone.images.first.image.url }}" 
                          alt="{{ phone.name }}" 
-                         class="w-full h-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-105">
+                         class="w-full h-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-105"
+                         height="500" width="500">
                     <canvas id="zoomCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none rounded-xl"></canvas>
                 </div>
                 <!-- Thumbnail Gallery -->
@@ -20,7 +22,8 @@
                         <img src="{{ image.image.url }}" 
                              alt="Image for {{ phone.name }}" 
                              class="w-full h-full object-contain cursor-pointer" 
-                             onmouseover="updatePreview('{{ image.image.url }}')">
+                             onmouseover="updatePreview('{{ image.image.url }}')"
+                             height="500" width="500">
                     </div>
                     {% endfor %}
                 </div>
@@ -86,9 +89,13 @@
                 </div>
 
                 <!-- Add to Cart Button -->
-                <button class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
-                    Add to Cart
-                </button>
+                <form method="post" action="{% url 'add_to_cart' phone.id %}">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+                        Add to Cart
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -206,4 +213,4 @@
         zoomCanvas.height = previewImage.height;
     };
 </script>
-{% endblock %}
+{% endblock content %}

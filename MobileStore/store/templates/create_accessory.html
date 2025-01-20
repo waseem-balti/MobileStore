@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Create Accessory</title>
+    <meta name="description" content="Create a new accessory for the mobile store.">
+    <meta name="keywords" content="accessory, mobile store, create accessory">
+</head>
+<body>
+    <h1>Create Accessory</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>

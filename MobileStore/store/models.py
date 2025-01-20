@@ -17,15 +17,15 @@ class Profile(models.Model):
     def __str__(self):
         return f'{self.user.username} Profile'
 
-    @receiver(post_save, sender=User)
-    def create_user_profile(sender, instance, created, **kwargs):
-        if created:
-            Profile.objects.create(user=instance)
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created and not hasattr(instance, 'profile'):
+        Profile.objects.create(user=instance)
 
-    @receiver(post_save, sender=User)
-    def save_user_profile(sender, instance, **kwargs):
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'profile'):
         instance.profile.save()
-
 
 class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -136,12 +136,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-
-
-from django.db import models
-from django.utils.text import slugify
-from django.contrib.auth.models import User
-
+    
 class MobilePhone(models.Model):
     shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="mobile_phones")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="mobile_phones")
@@ -497,6 +492,36 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='products/')
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=50)
-    
+    is_available = models.BooleanField(default=True)
+    slug = models.SlugField(unique=True)
+
     def __str__(self):
         return self.name
+
+
+
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Cart({self.user.username})"
+
+    def total_price(self):
+        return sum(item.total_price() for item in self.items.all())
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name} in {self.cart.user.username}'s cart"
+
+    def total_price(self):
+        return self.product.price * self.quantity
+
+    def increase_quantity(self):
+        self.quantity += 1
+        self.save()
