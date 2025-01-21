@@ -9,7 +9,7 @@ from django.dispatch import receiver
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    avatar = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     phone = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
     bio = models.TextField(max_length=500, blank=True)
@@ -18,15 +18,15 @@ class Profile(models.Model):
         return f'{self.user.username} Profile'
 
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created and not hasattr(instance, 'profile'):
+def create_profile(sender, instance, created, **kwargs):
+    if created:
         Profile.objects.create(user=instance)
 
 @receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
+def save_profile(sender, instance, **kwargs):
+    instance.profile.save()
 
+    
 class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     street_address = models.CharField(max_length=255)
@@ -426,6 +426,7 @@ class Review(models.Model):
     laptop = models.ForeignKey(Laptop, related_name='reviews', on_delete=models.CASCADE, null=True, blank=True)
     mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="reviews", null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="reviews",  null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     review_text = models.TextField()
     rating = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 6)])
     created_at = models.DateTimeField(auto_now_add=True)

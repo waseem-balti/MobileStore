@@ -64,15 +64,11 @@ def cart_count(request):
 
 @login_required
 def profile(request):
-    cart_item_count = 0
-    if request.user.is_authenticated:
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        cart_item_count = cart.items.count()
-
     if request.method == 'POST':
         user_form = UserUpdateForm(request.POST, instance=request.user)
-        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
-        
+        profile_form = ProfileUpdateForm(request.POST, 
+                                       request.FILES, 
+                                       instance=request.user.profile)
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
@@ -84,12 +80,17 @@ def profile(request):
         user_form = UserUpdateForm(instance=request.user)
         profile_form = ProfileUpdateForm(instance=request.user.profile)
 
+    cart_item_count = 0
+    if request.user.is_authenticated:
+        cart = Cart.objects.get(user=request.user)
+        cart_item_count = cart.items.count()
+
     context = {
         'user_form': user_form,
         'profile_form': profile_form,
-        'cart_item_count': cart_item_count,
+        'cart_item_count': cart_item_count
     }
-    return render(request, 'users/profile.html', context)     
+    return render(request, 'users/profile.html', context)
 
 def password_reset_request(request):
     if request.method == 'POST':

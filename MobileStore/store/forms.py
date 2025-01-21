@@ -5,19 +5,25 @@ from django.contrib.auth.models import User
 from .models import Profile
 
 class UserUpdateForm(forms.ModelForm):
-    email = forms.EmailField()
-
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border rounded-lg'}),
+            'email': forms.EmailInput(attrs={'class': 'w-full px-3 py-2 border rounded-lg'}),
+            'first_name': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border rounded-lg'}),
+            'last_name': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border rounded-lg'}),
+        }
 
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['avatar', 'phone', 'address', 'bio']
         widgets = {
-            'bio': forms.Textarea(attrs={'rows': 3}),
-            'address': forms.Textarea(attrs={'rows': 2}),
+            'phone': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border rounded-lg'}),
+            'address': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border rounded-lg', 'rows': 2}),
+            'bio': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border rounded-lg', 'rows': 3}),
+            'avatar': forms.FileInput(attrs={'class': 'w-full px-3 py-2 border rounded-lg'})
         }
 
 class InquiryForm(forms.ModelForm):
