@@ -92,73 +92,52 @@
         </div>
 
         <!-- Add to Cart Button -->
-          <form method="post" action="{% url 'add_to_cart' laptop.id %}">
-            {% csrf_token %}
-            <button type="submit" 
-                    class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
-                Add to Cart
-            </button>
-          </form>
+        <form method="post" action="{% url 'add_to_cart' 'laptop' laptop.id %}">
+          {% csrf_token %}
+          <button type="submit" 
+                  class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+              Add to Cart
+          </button>
+      </form>
       </div>
     </div>
   </div>
-
-  <!-- Reviews Section -->
-  <div class="mt-16">
-    <h3 class="text-3xl font-bold mb-8 text-gray-900">Customer Reviews</h3>
-    {% if reviews %}
-    <div class="grid gap-6">
+<!-- Reviews Section -->
+<div class="mt-16">
+  <h3 class="text-3xl font-bold mb-8 text-gray-900">Customer Reviews</h3>
+  {% if reviews %}
+  <div class="grid gap-6">
       {% for review in reviews %}
-      <div
-        class="bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg"
-      >
-        <div class="flex justify-between items-center mb-4">
-          <div class="flex items-center space-x-4">
-            <div
-              class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center"
-            >
-              <span class="text-xl font-bold text-indigo-600"
-                >{{ review.user.username|make_list|first }}</span
-              >
-            </div>
-            <div>
-              <h4 class="font-semibold text-gray-900">
-                {{ review.user.username }}
-              </h4>
-              <p class="text-sm text-gray-500">
-                {{ review.created_at|date:"D M d, Y" }}
-              </p>
-            </div>
+      <div class="bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg">
+          <div class="flex justify-between items-center mb-4">
+              <div class="flex items-center space-x-4">
+                  <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <span class="text-xl font-bold text-green-600">{{ review.user.username|make_list|first }}</span>
+                  </div>
+                  <div>
+                      <h4 class="font-semibold text-gray-900">{{ review.user.username }}</h4>
+                      <p class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</p>
+                  </div>
+              </div>
+              <div class="flex">
+                  {% for i in rating_range %}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if i <= review.rating %}#FCD34D{% else %}#E5E7EB{% endif %}" class="mr-1" viewBox="0 0 16 16">
+                      <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z"/>
+                  </svg>
+                  {% endfor %}
+              </div>
           </div>
-          <div class="flex">
-            {% for i in rating_range %}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              fill="{% if i <= review.rating %}#FCD34D{% else %}#E5E7EB{% endif %}"
-              class="mr-1"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z"
-              />
-            </svg>
-            {% endfor %}
-          </div>
-        </div>
-        <p class="text-gray-700 leading-relaxed">{{ review.review_text }}</p>
+          <p class="text-gray-700 leading-relaxed">{{ review.review_text }}</p>
       </div>
       {% endfor %}
-    </div>
-    {% else %}
-    <div class="bg-gray-50 rounded-xl p-8 text-center">
-      <p class="text-gray-600 text-lg">
-        No reviews yet. Be the first to share your experience!
-      </p>
-    </div>
-    {% endif %}
   </div>
+  {% else %}
+  <div class="bg-gray-50 rounded-xl p-8 text-center">
+      <p class="text-gray-600 text-lg">No reviews yet. Be the first to share your experience!</p>
+  </div>
+  {% endif %}
+</div>
+
 
   <!-- Add Review Form -->
   <div class="mt-16 mb-8">

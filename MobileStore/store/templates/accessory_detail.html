@@ -131,13 +131,13 @@
                 {% endif %}
 
                 <!-- Add to Cart Button -->
-                <form method="post" action="{% url 'add_to_cart' accessory.id %}">
+                <form method="post" action="{% url 'add_to_cart' 'accessory' accessory.id %}">
                     {% csrf_token %}
                     <button type="submit" 
                             class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
                         Add to Cart
                     </button>
-                </form>              
+                </form>             
 
             </div>
         </div>

@@ -1,11 +1,8 @@
 from django import forms
-from .models import Address, MobilePhone, Notification, OrderItem, PasswordResetToken, PaymentMethod, Review, Inquiry, Order, SellerReview, Category, ShopOwner, Customer, Advertisement, Image, Laptop, Accessory, Product, Tablet, Transaction, Wishlist, Cart, CartItem
+from .models import Address, MobilePhone, Notification, OrderItem, PasswordResetToken, PaymentMethod, Review, Inquiry, Order, SellerReview, Category, ShopOwner, Customer, Advertisement, Image, Laptop, Accessory, Tablet, Transaction, Wishlist, Cart, CartItem
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth.models import User
-from django import forms
-from django.contrib.auth.models import User
 from .models import Profile
-
 
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField()
@@ -18,14 +15,15 @@ class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['avatar', 'phone', 'address', 'bio']
-
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 3}),
+            'address': forms.Textarea(attrs={'rows': 2}),
+        }
 
 class InquiryForm(forms.ModelForm):
     class Meta:
         model = Inquiry
         fields = ['message']
-
-
 
 class MobilePhoneForm(forms.ModelForm):
     class Meta:
@@ -46,7 +44,6 @@ class MobilePhoneForm(forms.ModelForm):
             'pta_approved', 'five_g_supported', 'fingerprint', 
             'wifi', 'is_available'
         ]
-   
 
 class LaptopForm(forms.ModelForm):
     class Meta:
@@ -54,18 +51,12 @@ class LaptopForm(forms.ModelForm):
         fields = ['name', 'price', 'description', 'category', 'shop_owner', 'screen_size', 'operating_system', 
                   'storage', 'ram', 'processor', 'graphics_card', 'battery_life', 'display', 'os', 'wifi', 'bluetooth', 
                   'usb_type_c', 'is_available', 'slug', 'brand']
-        
 
 class AccessoryForm(forms.ModelForm):
     class Meta:
         model = Accessory
         fields = ['name', 'price', 'description', 'category', 'shop_owner', 'mobile_phone', 'type', 'compatibility', 
                   'is_available', 'slug']
-
-
-
-
-
 
 class SignupForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -87,12 +78,6 @@ class CustomSetPasswordForm(SetPasswordForm):
         model = User
         fields = ['new_password1', 'new_password2']
 
-
-
-
-
-
-
 # ShopOwner Form
 class ShopOwnerForm(forms.ModelForm):
     class Meta:
@@ -111,9 +96,6 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = ['name', 'slug']
 
-
-
-
 # Image Form
 class ImageForm(forms.ModelForm):
     class Meta:
@@ -125,6 +107,10 @@ class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         fields = ['rating', 'review_text']
+        widgets = {
+            'rating': forms.RadioSelect,
+            'review_text': forms.Textarea(attrs={'rows': 4}),
+        }
 
     def clean_review_text(self):
         review_text = self.cleaned_data.get('review_text')
@@ -184,7 +170,7 @@ class OrderForm(forms.ModelForm):
 class OrderItemForm(forms.ModelForm):
     class Meta:
         model = OrderItem
-        fields = ['order', 'product', 'quantity', 'price']
+        fields = ['order', 'mobile_phone', 'laptop', 'accessory', 'quantity', 'price']
 
 # PasswordResetToken Form
 class PasswordResetTokenForm(forms.ModelForm):
@@ -210,21 +196,17 @@ class TabletForm(forms.ModelForm):
         model = Tablet
         fields = ['name', 'price', 'category', 'shop_owner', 'is_available']
 
-
-
 class CartItemAdminForm(forms.ModelForm):
     class Meta:
         model = CartItem
-        fields = ['cart', 'product', 'quantity']
+        fields = ['cart', 'mobile_phone', 'laptop', 'accessory', 'quantity']
 
-    # Limit the dropdown options to only available carts and products
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['cart'].queryset = Cart.objects.all()
-        self.fields['product'].queryset = Product.objects.filter(is_available=True)
-
-
-
+        self.fields['mobile_phone'].queryset = MobilePhone.objects.all()
+        self.fields['laptop'].queryset = Laptop.objects.all()
+        self.fields['accessory'].queryset = Accessory.objects.all()
 
 class CheckoutForm(forms.Form):
     full_name = forms.CharField(max_length=255, label='Full Name')

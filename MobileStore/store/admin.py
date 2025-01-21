@@ -2,10 +2,8 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from .models import (
     ShopOwner, Customer, Category, MobilePhone, Laptop, Accessory, Image, Review, 
-    Transaction, Advertisement, Inquiry,Profile, Address, PaymentMethod, Wishlist, Order, OrderItem, 
-    PasswordResetToken, ShopOwner, Customer, Category, MobilePhone, 
-    SellerReview, Notification, Transaction, Advertisement, Inquiry, Tablet,
-    Image, Cart, CartItem, Product
+    Transaction, Advertisement, Inquiry, Profile, Address, PaymentMethod, Wishlist, Order, OrderItem, 
+    PasswordResetToken, SellerReview, Notification, Tablet, Cart, CartItem
 )
 from .forms import CartItemAdminForm
 
@@ -125,73 +123,69 @@ class ImageAdmin(admin.ModelAdmin):
         return "-"
     image_preview.short_description = 'Image Preview'
 
-# Custom Admin Actions
-@admin.action(description='Mark selected items as featured')
-def make_featured(modeladmin, request, queryset):
-    queryset.update(is_featured=True)
-
-# Register Profile model
+# Profile Admin
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'phone', 'address', 'bio']
     search_fields = ['user__username', 'phone']
 
-# Register Address model
+# Address Admin
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
     list_display = ['user', 'street_address', 'city', 'state', 'country', 'postal_code']
     search_fields = ['user__username', 'city', 'state', 'country']
 
-# Register PaymentMethod model
+# PaymentMethod Admin
 @admin.register(PaymentMethod)
 class PaymentMethodAdmin(admin.ModelAdmin):
     list_display = ['user', 'card_number', 'expiry_date', 'cardholder_name']
     search_fields = ['user__username', 'card_number']
 
-# Register Wishlist model
+# Wishlist Admin
 @admin.register(Wishlist)
 class WishlistAdmin(admin.ModelAdmin):
     list_display = ['user', 'product_name', 'product_category', 'added_at']
     search_fields = ['user__username', 'product_name', 'product_category']
 
-# Register Order and OrderItem models
+# Order Admin
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['user', 'order_number', 'status', 'total_amount', 'created_at', 'updated_at']
     search_fields = ['user__username', 'order_number']
     list_filter = ['status', 'created_at']
 
+# OrderItem Admin
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['order', 'product', 'quantity', 'price']
+    list_display = ['order', 'quantity', 'price']
     search_fields = ['order__order_number', 'product__name']
 
-# Register PasswordResetToken model
+# PasswordResetToken Admin
 @admin.register(PasswordResetToken)
 class PasswordResetTokenAdmin(admin.ModelAdmin):
     list_display = ['user', 'token', 'is_used', 'expires_at']
     search_fields = ['user__username', 'token']
 
-# Register SellerReview model
+# SellerReview Admin
 @admin.register(SellerReview)
 class SellerReviewAdmin(admin.ModelAdmin):
     list_display = ['shop_owner', 'customer', 'rating', 'created_at']
     search_fields = ['shop_owner__name', 'customer__user__username']
 
-# Register Notification model
+# Notification Admin
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ['user', 'message', 'is_read', 'created_at']
     search_fields = ['user__username', 'message']
 
-# Register Tablet model
+# Tablet Admin
 @admin.register(Tablet)
 class TabletAdmin(admin.ModelAdmin):
     list_display = ['name', 'price', 'category', 'shop_owner', 'is_available']
     search_fields = ['name', 'category__name', 'shop_owner__name']
     list_filter = ['is_available']
 
-
+# Cart Admin
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
     list_display = ('user', 'created_at', 'total_items', 'total_price_display')
@@ -206,25 +200,18 @@ class CartAdmin(admin.ModelAdmin):
         return f"PKR {obj.total_price():,.2f}"  # Display total price formatted
     total_price_display.short_description = 'Total Price'
 
-
-
-
+# CartItem Admin
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
-    form = CartItemAdminForm
-    list_display = ('cart', 'product', 'quantity', 'total_price_display')
-    search_fields = ('cart__user__username', 'product__name')
-    list_filter = ('cart__user', 'product')
+    list_display = ('cart', 'get_item_name', 'quantity')
+    list_filter = ('cart', 'mobile_phone', 'laptop', 'accessory')
 
-    def total_price_display(self, obj):
-        return f"PKR {obj.total_price():,.2f}"  # Display total price formatted
-    total_price_display.short_description = 'Total Price'
-
-
-
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'price', 'is_available')  # Display important fields
-    list_filter = ('category', 'is_available')  # Add filters for category and availability
-    search_fields = ('name', 'description')  # Enable search by name and description
-    ordering = ('category', 'name')  # Order products by category and name
+    def get_item_name(self, obj):
+        if obj.mobile_phone:
+            return obj.mobile_phone.name
+        elif obj.laptop:
+            return obj.laptop.name
+        elif obj.accessory:
+            return obj.accessory.name
+        return 'Unknown Item'
+    get_item_name.short_description = 'Item'

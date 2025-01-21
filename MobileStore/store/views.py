@@ -1,3 +1,4 @@
+import uuid
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse
@@ -19,9 +20,9 @@ from django.db import IntegrityError
 
 
 from .models import (
-    MobilePhone, Product, Review, Advertisement, Image, Order, SellerReview, 
+    MobilePhone, Review, Advertisement, Image, Order, SellerReview, 
     Laptop, Accessory, ShopOwner, PasswordResetToken, Profile, Address, 
-    PaymentMethod, Wishlist, Cart, CartItem, OrderItem, Order, OrderItem
+    PaymentMethod, Wishlist, Cart, CartItem, OrderItem, Order
 )
 from .forms import (
     ReviewForm, InquiryForm, MobilePhoneForm, OrderForm, SellerReviewForm, 
@@ -64,25 +65,21 @@ def cart_count(request):
 @login_required
 def profile(request):
     cart_item_count = 0
-    # Check if the user is authenticated
     if request.user.is_authenticated:
-        # Get or create the cart for the logged-in user
         cart, created = Cart.objects.get_or_create(user=request.user)
-        # Update the cart item count
         cart_item_count = cart.items.count()
+
     if request.method == 'POST':
         user_form = UserUpdateForm(request.POST, instance=request.user)
-        profile_form = ProfileUpdateForm(request.POST, 
-                                       request.FILES, 
-                                       instance=request.user.profile)
-        if not profile_form.is_valid():
-            print(profile_form.errors)
-            
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
             messages.success(request, 'Your profile has been updated!')
             return redirect('profile')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         user_form = UserUpdateForm(instance=request.user)
         profile_form = ProfileUpdateForm(instance=request.user.profile)
@@ -92,7 +89,7 @@ def profile(request):
         'profile_form': profile_form,
         'cart_item_count': cart_item_count,
     }
-    return render(request, 'users/profile.html', context)                
+    return render(request, 'users/profile.html', context)     
 
 def password_reset_request(request):
     if request.method == 'POST':
@@ -199,53 +196,6 @@ def index(request):
         'cart_item_count': cart_item_count  # Pass the cart item count here
     })
 
-def phone_detail(request, slug):
-    # Get the cart item count if the user is authenticated
-    cart_item_count = 0
-    if request.user.is_authenticated:
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        cart_item_count = cart.items.count()  # Get the count of items in the cart
-    
-    # Get the phone object based on the slug
-    phone = get_object_or_404(MobilePhone, slug=slug)
-
-    # Get related reviews, images, and advertisements
-    reviews = phone.reviews.all()
-    images = phone.images.all()
-    advertisements = Advertisement.objects.filter(mobile_phone=phone, is_active=True)
-
-    # Handle the review submission form
-    if request.method == 'POST':
-        form = ReviewForm(request.POST)
-        if form.is_valid():
-            review = form.save(commit=False)
-            if request.user.is_authenticated:
-                review.user = request.user
-                review.mobile_phone = phone
-                review.save()
-                return redirect('phone_detail', slug=slug)  # Redirect to the same page after submission
-            else:
-                return redirect('login')  # Redirect unauthenticated users to login
-    else:
-        form = ReviewForm()
-
-    # Rating range for the form
-    rating_range = range(1, 6)
-
-    # Pass all necessary data to the template
-    return render(request, 'phone_detail.html', {
-        'phone': phone, 
-        'reviews': reviews, 
-        'form': form,
-        'rating_range': rating_range,
-        'images': images,
-        'advertisements': advertisements,
-        'cart_item_count': cart_item_count
-    })
-
-
-
-
 def laptops(request):
     cart_item_count = 0
     # Check if the user is authenticated
@@ -255,7 +205,9 @@ def laptops(request):
         # Update the cart item count
         cart_item_count = cart.items.count()
     laptops = Laptop.objects.filter(is_available=True)
-    return render(request, 'laptops.html', {'laptops': laptops,'cart_item_count' : cart.items.count, 'cart_item_count': cart_item_count})
+    return render(request, 'laptops.html', {'laptops': laptops,'cart_item_count' : cart_item_count})
+
+
 
 
 def accessories(request):
@@ -270,64 +222,99 @@ def accessories(request):
     return render(request, 'accessories.html', {'accessories': accessories, 'cart_item_count': cart_item_count})
 
 
-def laptop_detail(request, slug):
+@login_required
+def phone_detail(request, slug):
+    phone = get_object_or_404(MobilePhone, slug=slug)
+    reviews = phone.reviews.all()
+    images = phone.images.all()
+    advertisements = Advertisement.objects.filter(mobile_phone=phone, is_active=True)
     cart_item_count = 0
-    # Check if the user is authenticated
-    if request.user.is_authenticated:
-        # Get or create the cart for the logged-in user
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        # Update the cart item count
-        cart_item_count = cart.items.count()
-    laptop = get_object_or_404(Laptop, slug=slug)  # Assuming you have a 'slug' field in your Laptop model
-    reviews = laptop.reviews.all()  # Assuming there's a related name for reviews in the Laptop model
-    rating_range = range(1, 6)
 
-    
-    if request.method == "POST":
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart_item_count = cart.items.count()
+
+    if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
-            review.laptop = laptop
             review.user = request.user
+            review.mobile_phone = phone
             review.save()
-            return redirect('laptop_detail', laptop_id=laptop.id)
-    
-    form = ReviewForm()
+            messages.success(request, 'Your review has been posted successfully!')
+            return redirect('phone_detail', slug=slug)
+    else:
+        form = ReviewForm()
+
+    rating_range = range(1, 6)
+    return render(request, 'phone_detail.html', {
+        'phone': phone,
+        'reviews': reviews,
+        'form': form,
+        'rating_range': rating_range,
+        'images': images,
+        'advertisements': advertisements,
+        'cart_item_count': cart_item_count
+    })
+
+
+
+@login_required
+def laptop_detail(request, slug):
+    laptop = get_object_or_404(Laptop, slug=slug)
+    reviews = laptop.reviews.all()
+    cart_item_count = 0
+
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart_item_count = cart.items.count()
+
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.laptop = laptop
+            review.save()
+            messages.success(request, 'Your review has been posted successfully!')
+            return redirect('laptop_detail', slug=slug)
+    else:
+        form = ReviewForm()
+
     rating_range = range(1, 6)
     return render(request, 'laptop_detail.html', {
         'laptop': laptop,
         'reviews': reviews,
         'form': form,
         'rating_range': rating_range,
-        'cart_item_count': cart_item_count,
+        'cart_item_count': cart_item_count
     })
 
+
+
+@login_required
 def accessory_detail(request, slug):
-    cart_item_count = 0
-    # Check if the user is authenticated
-    if request.user.is_authenticated:
-        # Get or create the cart for the logged-in user
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        # Update the cart item count
-        cart_item_count = cart.items.count()
     accessory = get_object_or_404(Accessory, slug=slug)
-    reviews = accessory.reviews.all()  # Assuming the related_name for reviews is 'reviews'
-    rating_range = range(1, 6)  # For star ratings
+    reviews = accessory.reviews.all()
+    cart_item_count = 0
+
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart_item_count = cart.items.count()
 
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
-            if request.user.is_authenticated:
-                review.user = request.user
-                review.accessory = accessory
-                review.save()
-                return redirect('accessory_detail', slug=slug)
-            else:
-                return redirect('login')  # Redirect unauthenticated users to login
+            review.user = request.user
+            review.accessory = accessory
+            review.save()
+            messages.success(request, 'Your review has been posted successfully!')
+            return redirect('accessory_detail', slug=slug)
     else:
         form = ReviewForm()
 
+    rating_range = range(1, 6)
     return render(request, 'accessory_detail.html', {
         'accessory': accessory,
         'reviews': reviews,
@@ -408,16 +395,16 @@ def seller_review(request, shop_owner_id):
 
 
 def smartphones_category(request):
-    products = Product.objects.filter(category='smartphones')
-    return render(request, 'category_page.html', {'category_name': 'Smartphones', 'products': products})
+    phone = MobilePhone.objects.filter(category='smartphones')
+    return render(request, 'category_page.html', {'category_name': 'Smartphones', 'phone': phone})
 
 def laptops_category(request):
-    products = Product.objects.filter(category='laptops')
-    return render(request, 'category_page.html', {'category_name': 'Laptops', 'products': products})
+    laptop = Laptop.objects.filter(category='laptops')
+    return render(request, 'category_page.html', {'category_name': 'Laptops', 'laptop': laptop})
 
 def accessories_category(request):
-    products = Product.objects.filter(category='accessories')
-    return render(request, 'category_page.html', {'category_name': 'Accessories', 'products': products})
+    accessory = Accessory.objects.filter(category='accessories')
+    return render(request, 'category_page.html', {'category_name': 'Accessories', 'accessory': accessory})
 
 
 
@@ -491,12 +478,26 @@ def create_accessory(request):
 
 
 @login_required
-def add_to_cart(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+def add_to_cart(request, item_type, item_id):
+    if item_type == 'phone':
+        item = get_object_or_404(MobilePhone, id=item_id)
+    elif item_type == 'laptop':
+        item = get_object_or_404(Laptop, id=item_id)
+    elif item_type == 'accessory':
+        item = get_object_or_404(Accessory, id=item_id)
+    else:
+        return redirect('view_cart')  # Invalid item type
+
     cart, created = Cart.objects.get_or_create(user=request.user)
 
     # Add or update the cart item
-    cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product)
+    if item_type == 'phone':
+        cart_item, item_created = CartItem.objects.get_or_create(cart=cart, mobile_phone=item)
+    elif item_type == 'laptop':
+        cart_item, item_created = CartItem.objects.get_or_create(cart=cart, laptop=item)
+    elif item_type == 'accessory':
+        cart_item, item_created = CartItem.objects.get_or_create(cart=cart, accessory=item)
+
     if not item_created:
         cart_item.quantity += 1
         cart_item.save()
@@ -509,12 +510,11 @@ def add_to_cart(request, product_id):
     return redirect('view_cart')  # Replace 'view_cart' with the actual URL name for the cart page
 
 
-
 @login_required
 def view_cart(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
     items = cart.items.all()
-    total_price = sum(item.product.price * item.quantity for item in items)  # Ensure proper price calculation
+    total_price = sum(item.total_price() for item in items)  # Ensure proper price calculation
 
     # Pass cart details to the template
     return render(request, 'cart.html', {
@@ -564,22 +564,40 @@ def checkout(request):
         if form.is_valid():
             address = form.cleaned_data['address']
             request.session['address'] = address
+            # Generate a unique order number
+            order_number = f"ORD{uuid.uuid4().hex[:10].upper()}"
             # Proceed with creating the order
             order = Order.objects.create(
                 user=request.user,
                 total_amount=total_price,
                 status='Pending',  # Default order status
-                order_number=f"ORD{cart.id}{str(total_price).zfill(4)}"  # Create an order number
+                order_number=order_number  # Create a unique order number
             )
 
             # Create order items for each cart item
             for item in items:
-                OrderItem.objects.create(
-                    order=order,
-                    product=item.product,
-                    quantity=item.quantity,
-                    price=item.product.price
-                )
+                product = item.get_item()
+                if isinstance(product, MobilePhone):
+                    OrderItem.objects.create(
+                        order=order,
+                        mobile_phone=product,
+                        quantity=item.quantity,
+                        price=product.price
+                    )
+                elif isinstance(product, Laptop):
+                    OrderItem.objects.create(
+                        order=order,
+                        laptop=product,
+                        quantity=item.quantity,
+                        price=product.price
+                    )
+                elif isinstance(product, Accessory):
+                    OrderItem.objects.create(
+                        order=order,
+                        accessory=product,
+                        quantity=item.quantity,
+                        price=product.price
+                    )
 
             # Clear cart items after successful order placement
             cart.items.all().delete()
@@ -593,13 +611,10 @@ def checkout(request):
 
     return render(request, 'checkout.html', {'form': form, 'total_price': total_price})
 
-
 @login_required
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'order_confirmation.html', {'order': order})
-
-
 
 @login_required
 def get_cart_items(request):
@@ -625,4 +640,18 @@ def product_list(request):
     return render(request, 'product_list.html', {
         'products': products,
         'cart_item_count': cart_item_count,
+    })
+
+
+
+@login_required
+def cart_view(request):
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    cart_items = cart.items.all().select_related('mobile_phone', 'laptop', 'accessory')
+    
+    total_price = sum(item.get_total_price() for item in cart_items)
+    
+    return render(request, 'cart.html', {
+        'cart_items': cart_items,
+        'total_price': total_price,
     })

@@ -58,34 +58,6 @@ class Wishlist(models.Model):
 
 
 
-class Order(models.Model):
-    STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Processing', 'Processing'),
-        ('Shipped', 'Shipped'),
-        ('Delivered', 'Delivered'),
-        ('Cancelled', 'Cancelled'),
-    ]
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    order_number = models.CharField(max_length=20, unique=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    shipping_address = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f'Order {self.order_number}'
-
-class OrderItem(models.Model):
-    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey('store.Product', on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f'{self.quantity} x {self.product.name}'
 class PasswordResetToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.UUIDField(default=uuid.uuid4, editable=False)
@@ -143,7 +115,7 @@ class MobilePhone(models.Model):
     name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-
+    image = models.ImageField(upload_to='products/phones/', blank=True, null=True)
     # Network Fields
     technology = models.CharField(max_length=255, blank=True, null=True)
     network_bands = models.TextField(blank=True, null=True)
@@ -364,6 +336,7 @@ class Accessory(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True, null=True)
     mobile_phone = models.ForeignKey(MobilePhone, related_name='accessories', on_delete=models.CASCADE, null=True, blank=True)
+    image = models.ImageField(upload_to='products/accessories/', blank=True, null=True)
 
     # Accessory-specific fields
     type = models.CharField(max_length=255, blank=True, null=True)  # E.g., "Case", "Screen Protector", "Charger"
@@ -392,7 +365,7 @@ class Laptop(models.Model):
     name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    
+    image = models.ImageField(upload_to='products/laptops/', blank=True, null=True)
     # Laptop-specific fields
     screen_size = models.CharField(max_length=255, blank=True, null=True)
     operating_system = models.CharField(max_length=255, blank=True, null=True)
@@ -441,10 +414,6 @@ class Image(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])]
     )
     is_featured = models.BooleanField(default=False)
-
-    accessory = models.ForeignKey(Accessory, related_name='images', on_delete=models.CASCADE, null=True, blank=True)
-    laptop = models.ForeignKey(Laptop, related_name='images', on_delete=models.CASCADE, null=True, blank=True)
-    image = models.ImageField(upload_to='images/')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -462,41 +431,15 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-
     def __str__(self):
         if self.user:
-            # Check for the mobile_phone, laptop, or accessory field and return the first one found
             if self.mobile_phone:
                 return f'Review by {self.user.username} for {self.mobile_phone}'
             elif self.laptop:
                 return f'Review by {self.user.username} for {self.laptop}'
             elif self.accessory:
                 return f'Review by {self.user.username} for {self.accessory}'
-            else:
-                return f'Review by {self.user.username} for an unspecified product'
-        return 'No user assigned'
-
-    
-
-
-class Product(models.Model):
-    CATEGORY_CHOICES = [
-        ('smartphones', 'Smartphones'),
-        ('laptops', 'Laptops'),
-        ('accessories', 'Accessories'),
-        # Add other categories here
-    ]
-    
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to='products/')
-    category = models.CharField(choices=CATEGORY_CHOICES, max_length=50)
-    is_available = models.BooleanField(default=True)
-    slug = models.SlugField(unique=True)
-
-    def __str__(self):
-        return self.name
+        return 'Review'
 
 
 
@@ -510,18 +453,74 @@ class Cart(models.Model):
     def total_price(self):
         return sum(item.total_price() for item in self.items.all())
 
-
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, null=True, blank=True)
+    laptop = models.ForeignKey(Laptop, on_delete=models.CASCADE, null=True, blank=True)
+    accessory = models.ForeignKey(Accessory, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.PositiveIntegerField(default=1)
 
-    def __str__(self):
-        return f"{self.quantity} x {self.product.name} in {self.cart.user.username}'s cart"
+    def get_image_url(self):
+        if self.mobile_phone and self.mobile_phone.images.first():
+            return self.mobile_phone.images.first().image.url
+        elif self.laptop and self.laptop.image:
+            return self.laptop.image.url
+        elif self.accessory and self.accessory.image:
+            return self.accessory.image.url
+        return None
+
+    def get_item(self):
+        if self.mobile_phone:
+            return self.mobile_phone
+        elif self.laptop:
+            return self.laptop
+        elif self.accessory:
+            return self.accessory
+        return None
 
     def total_price(self):
-        return self.product.price * self.quantity
+        item = self.get_item()
+        if item:
+            return item.price * self.quantity
+        return 0
+    
+    def __str__(self):
+        item = self.get_item()
+        return f"{self.quantity} x {item.name if item else 'Unknown Item'} in {self.cart.user.username}'s cart"
 
-    def increase_quantity(self):
-        self.quantity += 1
-        self.save()
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Processing', 'Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order_number = models.CharField(max_length=20, unique=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    shipping_address = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Order {self.order_number} by {self.user.username}"
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, null=True, blank=True)
+    laptop = models.ForeignKey(Laptop, on_delete=models.CASCADE, null=True, blank=True)
+    accessory = models.ForeignKey(Accessory, on_delete=models.CASCADE, null=True, blank=True)
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.get_product()} in order {self.order.order_number}"
+
+    def get_product(self):
+        return self.mobile_phone or self.laptop or self.accessory
+    
+    
