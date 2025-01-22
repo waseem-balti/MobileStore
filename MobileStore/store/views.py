@@ -19,7 +19,7 @@ from .forms import CheckoutForm
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-
+from django.db.models import Q
 
 from .models import (
     MobilePhone,
@@ -830,3 +830,35 @@ def add_review(request, slug):
         )
     else:
         return JsonResponse({"success": False, "errors": form.errors})
+
+
+def search(request):
+    query = request.GET.get('q', '')
+    if query:
+        phones = MobilePhone.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query)
+        )
+        laptops = Laptop.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query)
+        )
+        accessories = Accessory.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query)
+        )
+    else:
+        phones = MobilePhone.objects.none()
+        laptops = Laptop.objects.none()
+        accessories = Accessory.objects.none()
+
+    context = {
+        'query': query,
+        'phones': phones,
+        'laptops': laptops,
+        'accessories': accessories,
+        'total_results': phones.count() + laptops.count() + accessories.count(),
+    }
+    return render(request, 'search_results.html', context)
+
+

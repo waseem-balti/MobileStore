@@ -41,6 +41,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
+          
           <!-- Desktop Navigation -->
           <div class="hidden md:flex md:items-center md:space-x-6">
             <a href="{% url 'index' %}"
@@ -71,6 +72,88 @@
                 {% endif %}
               </a>
             {% endif %}
+            <div class="hidden md:flex md:items-center md:space-x-6">
+              <div class="relative">
+                  <button id="search-button" class="text-gray-700 hover:text-blue-600 p-2 rounded-full hover:bg-gray-100">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                      </svg>
+                  </button>
+                  <!-- Search Modal -->
+                  <div id="search-modal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-50 z-50 transition-opacity duration-300">
+                      <div class="flex items-center justify-center min-h-screen p-4">
+                          <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl transform transition-transform duration-300">
+                              <!-- Close button -->
+                              <div class="flex justify-end p-2">
+                                  <button id="close-search" class="p-2 hover:bg-gray-100 rounded-full">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                  </button>
+                              </div>
+                              <form action="{% url 'search' %}" method="GET" class="p-6">
+                                  <div class="flex items-center border-b border-gray-200">
+                                      <input type="text" name="q" placeholder="Search products..." 
+                                             class="w-full py-2 pl-4 pr-8 text-gray-700 bg-transparent border-none focus:outline-none"
+                                             autofocus>
+                                      <button type="submit" class="p-2 text-gray-500 hover:text-blue-600">
+                                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                          </svg>
+                                      </button>
+                                  </div>
+                              </form>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <!-- Rest of navbar items -->
+          </div>
+          
+          <script>
+          const searchModal = document.getElementById('search-modal');
+          const searchButton = document.getElementById('search-button');
+          const closeButton = document.getElementById('close-search');
+          
+          function openModal() {
+              searchModal.classList.remove('hidden');
+              // Add opacity transition
+              setTimeout(() => {
+                  searchModal.classList.add('opacity-100');
+              }, 10);
+          }
+          
+          function closeModal() {
+              searchModal.classList.remove('opacity-100');
+              // Wait for transition before hiding
+              setTimeout(() => {
+                  searchModal.classList.add('hidden');
+              }, 300);
+          }
+          
+          // Open modal
+          searchButton.addEventListener('click', openModal);
+          
+          // Close modal with button
+          closeButton.addEventListener('click', closeModal);
+          
+          // Close modal when clicking outside
+          searchModal.addEventListener('click', (e) => {
+              if (e.target === searchModal) {
+                  closeModal();
+              }
+          });
+          
+          // Close modal with ESC key
+          document.addEventListener('keydown', (e) => {
+              if (e.key === 'Escape' && !searchModal.classList.contains('hidden')) {
+                  closeModal();
+              }
+          });
+          </script>
+
+
+          
             {% if user.is_authenticated %}
               <!-- Profile Dropdown -->
               <div class="relative" id="user-menu">
@@ -227,3 +310,14 @@
     </footer>
   </body>
 </html>
+<script>
+  document.getElementById('search-button').addEventListener('click', () => {
+      document.getElementById('search-modal').classList.remove('hidden');
+  });
+  
+  document.getElementById('search-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'search-modal') {
+          e.target.classList.add('hidden');
+      }
+  });
+</script>
