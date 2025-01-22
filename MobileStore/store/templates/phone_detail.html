@@ -1,133 +1,405 @@
 {% extends "base.html" %}
 {% load custom_filters %}
-
+{% load static %}
+{% load humanize %}
 {% block content %}
-<div class="container mx-auto p-6">
-    <!-- Main Product Card -->
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transition-shadow hover:shadow-2xl">
+<div class="container mx-auto px-4 py-8">
+    <!-- Hero Section -->
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
         <div class="flex flex-col lg:flex-row">
             <!-- Image Gallery Section -->
             <div class="lg:w-1/2 p-8 bg-gray-50">
-                <div class="relative w-full h-[500px] mb-6">
-                    <img id="previewImage" src="{{ phone.images.first.image.url }}" 
-                         alt="{{ phone.name }}" 
-                         class="w-full h-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-105"
-                         height="500" width="500">
-                    <canvas id="zoomCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none rounded-xl"></canvas>
+                <div class="relative aspect-square mb-6">
+                    <img id="mainImage" 
+                         src="{{ phone.images.first.image.url }}" 
+                         alt="{{ phone.name }}"
+                         height="500" width="500"
+                         class="w-full h-full object-contain rounded-2xl shadow-lg transition-all duration-500 hover:scale-105"
+                    />
                 </div>
                 <!-- Thumbnail Gallery -->
-                <div class="mt-6 grid grid-cols-4 gap-4">
+                <div class="grid grid-cols-4 gap-4 mt-6">
                     {% for image in images %}
-                    <div class="aspect-square overflow-hidden rounded-lg border-2 border-gray-200 hover:border-indigo-500 transition-all duration-300 transform hover:scale-105">
-                        <img src="{{ image.image.url }}" 
-                             alt="Image for {{ phone.name }}" 
-                             class="w-full h-full object-contain cursor-pointer" 
-                             onmouseover="updatePreview('{{ image.image.url }}')"
-                             height="500" width="500">
-                    </div>
+                    <button 
+                        class="aspect-square rounded-xl overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        onclick="updateMainImage('{{ image.image.url }}')"
+                    >
+                        <img 
+                            src="{{ image.image.url }}" 
+                            alt="View {{ forloop.counter }} of {{ phone.name }}"
+                            class="w-full h-full object-contain"
+                            height="500" width="500"
+                        />
+                    </button>
                     {% endfor %}
                 </div>
             </div>
 
             <!-- Product Details Section -->
             <div class="lg:w-1/2 p-8 lg:pl-12 flex flex-col">
-                <h1 class="text-4xl font-bold text-gray-900 mb-4 leading-tight">{{ phone.name }}</h1>
-                <p class="text-lg text-gray-600 mb-8 leading-relaxed">{{ phone.description }}</p>
-                
-                <!-- Price Tag -->
-                <div class="bg-green-50 p-4 rounded-xl mb-8">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ phone.name }}</h1>
+                    <p class="text-lg text-gray-600">{{ phone.description }}</p>
+                </div>
+
+                <!-- Price Card -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-2xl mb-8">
                     <div class="flex items-center justify-between">
-                        <span class="text-lg font-semibold text-gray-700">Price</span>
-                        <span class="text-3xl font-bold text-green-600">PKR {{ phone.price }}</span>
+                        <span class="text-lg font-medium text-gray-700">Price</span>
+                        <span class="text-3xl font-bold text-green-600">PKR {{ phone.price|intcomma }}</span>
                     </div>
                 </div>
 
-                <!-- Specifications Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Key Features Grid -->
+                <div class="grid grid-cols-2 gap-4 mb-8">
                     <div class="bg-gray-50 p-4 rounded-xl">
-                        <span class="text-sm text-gray-500">Storage</span>
-                        <p class="text-lg font-semibold text-gray-800">{{ phone.storage }} GB</p>
+                        <span class="text-sm font-medium text-gray-500">Storage</span>
+                        <p class="text-lg font-semibold text-gray-900">{{ phone.storage }} GB</p>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-xl">
-                        <span class="text-sm text-gray-500">RAM</span>
-                        <p class="text-lg font-semibold text-gray-800">{{ phone.ram }} GB</p>
+                        <span class="text-sm font-medium text-gray-500">RAM</span>
+                        <p class="text-lg font-semibold text-gray-900">{{ phone.ram }} GB</p>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-xl">
-                        <span class="text-sm text-gray-500">Battery</span>
-                        <p class="text-lg font-semibold text-gray-800">{{ phone.battery_capacity }} mAh</p>
+                        <span class="text-sm font-medium text-gray-500">Battery</span>
+                        <p class="text-lg font-semibold text-gray-900">{{ phone.battery_capacity }} mAh</p>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-xl">
-                        <span class="text-sm text-gray-500">Chipset</span>
-                        <p class="text-lg font-semibold text-gray-800">{{ phone.chipset }}</p>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-xl">
-                        <span class="text-sm text-gray-500">Camera</span>
-                        <p class="text-lg font-semibold text-gray-800">{{ phone.camera }}</p>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-xl">
-                        <span class="text-sm text-gray-500">Display</span>
-                        <p class="text-lg font-semibold text-gray-800">{{ phone.display }}</p>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-xl">
-                        <span class="text-sm text-gray-500">Operating System</span>
-                        <p class="text-lg font-semibold text-gray-800">{{ phone.os }}</p>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-xl">
-                        <span class="text-sm text-gray-500">SIM</span>
-                        <p class="text-lg font-semibold text-gray-800">{{ phone.sim }}</p>
+                        <span class="text-sm font-medium text-gray-500">Processor</span>
+                        <p class="text-lg font-semibold text-gray-900">{{ phone.chipset }}</p>
                     </div>
                 </div>
 
-                <!-- Features Badges -->
+                <!-- Status Badges -->
                 <div class="flex flex-wrap gap-4 mb-8">
-                    <div class="px-4 py-2 rounded-full {% if phone.pta_approved %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} font-medium">
+                    <span class="px-4 py-2 rounded-full {% if phone.pta_approved %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} font-medium">
                         PTA {% if phone.pta_approved %}Approved{% else %}Not Approved{% endif %}
-                    </div>
-                    <div class="px-4 py-2 rounded-full {% if phone.five_g_supported %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %} font-medium">
-                        {% if phone.five_g_supported %}5G Supported{% else %}4G{% endif %}
-                    </div>
+                    </span>
+                    <span class="px-4 py-2 rounded-full {% if phone.five_g_supported %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %} font-medium">
+                        {% if phone.five_g_supported %}5G{% else %}4G{% endif %} Support
+                    </span>
                 </div>
 
                 <!-- Add to Cart Button -->
-                <form method="post" action="{% url 'add_to_cart' 'phone' phone.id %}">
+                <form method="post" action="{% url 'add_to_cart' 'phone' phone.id %}" class="mt-auto">
                     {% csrf_token %}
                     <button type="submit" 
-                            class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+                            class="w-full bg-blue-600 text-white py-4 px-8 rounded-xl text-lg font-semibold 
+                                   hover:bg-blue-700 transform transition-all duration-300 hover:scale-105 
+                                   focus:outline-none focus:ring-4 focus:ring-blue-200 active:scale-95">
                         Add to Cart
                     </button>
                 </form>
-                
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Specifications -->
+    <div class="mt-12 bg-white rounded-3xl shadow-xl p-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8">Technical Specifications</h2>
+        
+        <div class="grid grid-cols-1 gap-8">
+            <!-- Network -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Network</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Technology</span>
+                            <span class="font-medium text-gray-900">{{ phone.technology }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">2G Bands</span>
+                            <span class="font-medium text-gray-900">{{ phone.network_2g_bands }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">3G Bands</span>
+                            <span class="font-medium text-gray-900">{{ phone.network_3g_bands }}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">4G Bands</span>
+                            <span class="font-medium text-gray-900">{{ phone.network_4g_bands }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">5G Bands</span>
+                            <span class="font-medium text-gray-900">{{ phone.network_5g_bands }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Speed</span>
+                            <span class="font-medium text-gray-900">{{ phone.network_speed }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Launch -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Launch Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Announced</span>
+                        <span class="font-medium text-gray-900">{{ phone.announcement_date|date:"Y, F d" }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Status</span>
+                        <span class="font-medium text-gray-900">{{ phone.status }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Body</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Dimensions</span>
+                        <span class="font-medium text-gray-900">{{ phone.dimensions }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Weight</span>
+                        <span class="font-medium text-gray-900">{{ phone.weight }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">SIM</span>
+                        <span class="font-medium text-gray-900">{{ phone.sim }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Water Resistance</span>
+                        <span class="font-medium text-gray-900">{{ phone.water_resistant|yesno:"IP68/IP69 dust/water resistant (up to 1.5m for 30 min),Not water resistant" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Display -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Display</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Type</span>
+                        <span class="font-medium text-gray-900">{{ phone.display_type }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Size</span>
+                        <span class="font-medium text-gray-900">{{ phone.display_size }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Resolution</span>
+                        <span class="font-medium text-gray-900">{{ phone.display_resolution }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Platform</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">OS</span>
+                        <span class="font-medium text-gray-900">{{ phone.os }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Chipset</span>
+                        <span class="font-medium text-gray-900">{{ phone.chipset }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">CPU</span>
+                        <span class="font-medium text-gray-900">{{ phone.cpu }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">GPU</span>
+                        <span class="font-medium text-gray-900">{{ phone.gpu }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memory -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Memory</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Card Slot</span>
+                        <span class="font-medium text-gray-900">{{ phone.card_slot }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Internal</span>
+                        <span class="font-medium text-gray-900">{{ phone.internal_memory }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Camera -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Main Camera</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Setup</span>
+                        <span class="font-medium text-gray-900">{{ phone.main_camera }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Features</span>
+                        <span class="font-medium text-gray-900">{{ phone.camera_features }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Video</span>
+                        <span class="font-medium text-gray-900">{{ phone.video_capabilities }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selfie Camera -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Selfie Camera</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Setup</span>
+                        <span class="font-medium text-gray-900">{{ phone.selfie_camera_features }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Video</span>
+                        <span class="font-medium text-gray-900">{{ phone.selfie_video }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sound -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Sound</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Loudspeaker</span>
+                        <span class="font-medium text-gray-900">{{ phone.speaker }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">3.5mm Jack</span>
+                        <span class="font-medium text-gray-900">{{ phone.jack_3_5mm|yesno:"Yes,No" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Communications -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Communications</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">WLAN</span>
+                        <span class="font-medium text-gray-900">{{ phone.wlan }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Bluetooth</span>
+                        <span class="font-medium text-gray-900">{{ phone.bluetooth|yesno:"Yes,No" }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">GPS</span>
+                        <span class="font-medium text-gray-900">{{ phone.positioning }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">NFC</span>
+                        <span class="font-medium text-gray-900">{{ phone.nfc|yesno:"Yes,No" }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Radio</span>
+                        <span class="font-medium text-gray-900">{{ phone.radio|yesno:"Yes,No" }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">USB</span>
+                        <span class="font-medium text-gray-900">{{ phone.usb_type }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Features</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Sensors</span>
+                        <span class="font-medium text-gray-900">{{ phone.sensors }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Battery -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Battery</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Type</span>
+                        <span class="font-medium text-gray-900">{{ phone.battery_type }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Charging</span>
+                        <span class="font-medium text-gray-900">{{ phone.charging }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Misc -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Miscellaneous</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Colors</span>
+                        <span class="font-medium text-gray-900">{{ phone.colors }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b">
+                        <span class="text-gray-600">Models</span>
+                        <span class="font-medium text-gray-900">{{ phone.models }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Share -->
+            <div class="mt-8">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Share</h3>
+                <div class="flex space-x-4">
+                    <a href="https://www.facebook.com/sharer.php?u={{ request.build_absolute_uri }}" 
+                       target="_blank" 
+                       rel="noopener"
+                       class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Share on Facebook
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text={{ phone.name }}&amp;url={{ request.build_absolute_uri }}" 
+                       target="_blank" 
+                       rel="noopener"
+                       class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors">
+                        Share on Twitter
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Reviews Section -->
-    <div class="mt-16">
-        <h3 class="text-3xl font-bold mb-8 text-gray-900">Customer Reviews</h3>
+    <div class="mt-12 bg-white rounded-3xl shadow-xl p-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8">Customer Reviews</h2>
+        
         {% if reviews %}
-        <div class="grid gap-6">
+        <div class="space-y-6">
             {% for review in reviews %}
-            <div class="bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg">
-                <div class="flex justify-between items-center mb-4">
+            <div class="bg-gray-50 rounded-xl p-6">
+                <div class="flex justify-between items-start mb-4">
                     <div class="flex items-center space-x-4">
-                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <span class="text-xl font-bold text-green-600">{{ review.user.username|make_list|first }}</span>
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-xl font-bold text-blue-600">{{ review.user.username|make_list|first }}</span>
                         </div>
                         <div>
                             <h4 class="font-semibold text-gray-900">{{ review.user.username }}</h4>
-                            <p class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</p>
+                            <p class="text-sm text-gray-500">{{ review.created_at|date:"F d, Y" }}</p>
                         </div>
                     </div>
                     <div class="flex">
                         {% for i in rating_range %}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="{% if i <= review.rating %}#FCD34D{% else %}#E5E7EB{% endif %}" 
-                             class="mr-1" viewBox="0 0 16 16">
-                            <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z"/>
+                        <svg class="w-5 h-5 {% if i <= review.rating %}text-yellow-400{% else %}text-gray-300{% endif %}" 
+                             fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                         </svg>
                         {% endfor %}
                     </div>
                 </div>
-                <p class="text-gray-700 leading-relaxed">{{ review.review_text }}</p>
+                <p class="text-gray-700">{{ review.review_text }}</p>
             </div>
             {% endfor %}
         </div>
@@ -136,82 +408,63 @@
             <p class="text-gray-600 text-lg">No reviews yet. Be the first to share your experience!</p>
         </div>
         {% endif %}
-    </div>
 
-    <!-- Add Review Form -->
-    <div class="mt-16 mb-8">
-        <h4 class="text-2xl font-bold mb-6 text-gray-900">Write a Review</h4>
-        <form method="post" class="bg-white rounded-xl shadow-lg p-8">
-            {% csrf_token %}
-            <div class="space-y-6">
+        <!-- Add Review Form -->
+        <div class="mt-12">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">Write a Review</h3>
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Rating Selection -->
                 <div>
-                    <label for="rating" class="block text-lg font-medium text-gray-700 mb-4">Rating</label>
+                    <label class="block text-lg font-medium text-gray-700 mb-4">Rating</label>
                     <div class="flex space-x-4">
                         {% for i in rating_range %}
                         <label class="relative">
                             <input type="radio" name="rating" value="{{ i }}" class="hidden peer" {% if form.rating.value == i %}checked{% endif %}>
-                            <div class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-gray-200 cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50">
-                                <span class="text-xl font-semibold text-gray-700 peer-checked:text-green-600">{{ i }}</span>
+                            <div class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-gray-200 cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">
+                                <span class="text-xl font-semibold text-gray-700 peer-checked:text-blue-600">{{ i }}</span>
                             </div>
                         </label>
                         {% endfor %}
                     </div>
+                    {% if form.rating.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.rating.errors }}</p>
+                    {% endif %}
                 </div>
 
+                <!-- Review Text -->
                 <div>
-                    <label for="review-text" class="block text-lg font-medium text-gray-700 mb-2">Your Review</label>
-                    <textarea name="review_text" id="review-text" rows="4" 
-                              class="w-full border-2 border-gray-200 rounded-xl p-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                              placeholder="Share your experience with this product..."></textarea>
+                    <label for="review_text" class="block text-lg font-medium text-gray-700 mb-2">Your Review</label>
+                    {{ form.review_text }}
+                    {% if form.review_text.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.review_text.errors }}</p>
+                    {% endif %}
                 </div>
 
                 <button type="submit" 
-                        class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+                        class="w-full bg-blue-600 text-white py-4 px-8 rounded-xl text-lg font-semibold 
+                               hover:bg-blue-700 transform transition-all duration-300 hover:scale-105 
+                               focus:outline-none focus:ring-4 focus:ring-blue-200 active:scale-95">
                     Submit Review
                 </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 
 <script>
-    function updatePreview(imageUrl) {
-        const previewImage = document.getElementById('previewImage');
-        previewImage.src = imageUrl;
-        
-        // Add fade effect
-        previewImage.style.opacity = '0';
-        setTimeout(() => {
-            previewImage.style.opacity = '1';
-        }, 100);
-    }
+function updateMainImage(imageUrl) {
+    const mainImage = document.getElementById('mainImage');
+    mainImage.style.opacity = '0';
+    
+    setTimeout(() => {
+        mainImage.src = imageUrl;
+        mainImage.style.opacity = '1';
+    }, 300);
+}
 
-    // Initialize preview image transition
-    const previewImage = document.getElementById('previewImage');
-    previewImage.style.transition = 'all 0.3s ease-in-out';
-
-    // Zoom functionality
-    const zoomCanvas = document.getElementById('zoomCanvas');
-    const ctx = zoomCanvas.getContext('2d');
-
-    previewImage.addEventListener('mousemove', (e) => {
-        const rect = previewImage.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const zoomFactor = 2;
-        const width = previewImage.width * zoomFactor;
-        const height = previewImage.height * zoomFactor;
-        const zoomX = (x / previewImage.width) * width - zoomCanvas.width / 2;
-        const zoomY = (y / previewImage.height) * height - zoomCanvas.height / 2;
-
-        ctx.clearRect(0, 0, zoomCanvas.width, zoomCanvas.height);
-        ctx.drawImage(previewImage, zoomX, zoomY, width, height, 0, 0, zoomCanvas.width, zoomCanvas.height);
-    });
-
-    previewImage.onload = function() {
-        zoomCanvas.width = previewImage.width;
-        zoomCanvas.height = previewImage.height;
-    };
+// Initialize main image transition
+document.getElementById('mainImage').style.transition = 'all 0.3s ease-in-out';
 </script>
 {% endblock content %}

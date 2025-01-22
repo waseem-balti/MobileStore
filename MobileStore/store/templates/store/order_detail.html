@@ -37,13 +37,35 @@
                     {% for item in order.items.all %}
                         <div class="p-6">
                             <div class="flex items-center">
-                                {% if item.product.image %}
-                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 object-cover rounded" width="64" height="64">
-                                {% else %}
-                                    <div class="w-16 h-16 bg-gray-200 rounded"></div>
+                                {% if item.mobile_phone %}
+                                    {% if item.mobile_phone.image %}
+                                        <img src="{{ item.mobile_phone.image.url }}" alt="{{ item.mobile_phone.name }}" class="w-16 h-16 object-cover rounded" width="64" height="64">
+                                    {% else %}
+                                        <div class="w-16 h-16 bg-gray-200 rounded"></div>
+                                    {% endif %}
+                                {% elif item.laptop %}
+                                    {% if item.laptop.image %}
+                                        <img src="{{ item.laptop.image.url }}" alt="{{ item.laptop.name }}" class="w-16 h-16 object-cover rounded" width="64" height="64">
+                                    {% else %}
+                                        <div class="w-16 h-16 bg-gray-200 rounded"></div>
+                                    {% endif %}
+                                {% elif item.accessory %}
+                                    {% if item.accessory.image %}
+                                        <img src="{{ item.accessory.image.url }}" alt="{{ item.accessory.name }}" class="w-16 h-16 object-cover rounded" width="64" height="64">
+                                    {% else %}
+                                        <div class="w-16 h-16 bg-gray-200 rounded"></div>
+                                    {% endif %}
                                 {% endif %}
                                 <div class="ml-4 flex-1">
-                                    <h3 class="text-sm font-medium text-gray-900">{{ item.product.name }}</h3>
+                                    <h3 class="text-sm font-medium text-gray-900">
+                                        {% if item.mobile_phone %}
+                                            {{ item.mobile_phone.name }}
+                                        {% elif item.laptop %}
+                                            {{ item.laptop.name }}
+                                        {% elif item.accessory %}
+                                            {{ item.accessory.name }}
+                                        {% endif %}
+                                    </h3>
                                     <p class="mt-1 text-sm text-gray-500">Quantity: {{ item.quantity }}</p>
                                     <p class="mt-1 text-sm text-gray-500">${{ item.price }} each</p>
                                 </div>

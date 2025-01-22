@@ -48,25 +48,125 @@ class CategoryAdmin(admin.ModelAdmin):
 # MobilePhone Admin
 @admin.register(MobilePhone)
 class MobilePhoneAdmin(admin.ModelAdmin):
-    list_display = ['name', 'price', 'shop_owner', 'is_available', 'created_at']
-    list_filter = ['is_available', 'five_g_supported', 'pta_approved']
-    search_fields = ['name', 'shop_owner__store_name']
+    list_display = [
+        'name', 'price', 'shop_owner', 'category', 'is_available', 'pta_approved',
+        'five_g_supported', 'created_at', 'updated_at', 'views'
+    ]
+    list_filter = [
+        'is_available', 'five_g_supported', 'pta_approved', 'water_resistant',
+        'fast_charging', 'fast_wireless_charging', 'reverse_wireless_charging'
+    ]
+    search_fields = [
+        'name', 'shop_owner__store_name', 'category__name', 'os', 'chipset', 'dimensions'
+    ]
     prepopulated_fields = {"slug": ("name",)}
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['created_at', 'updated_at', 'views']
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'slug', 'shop_owner', 'category', 'price', 'description', 'image')
+        }),
+        ('Network', {
+            'fields': (
+                'technology', 'network_bands', 'network_2g_bands', 'network_3g_bands',
+                'network_4g_bands', 'network_5g_bands', 'network_speed'
+            )
+        }),
+        ('Launch', {
+            'fields': ('announcement_date', 'status')
+        }),
+        ('Body', {
+            'fields': ('dimensions', 'weight', 'sim', 'water_resistant')
+        }),
+        ('Display', {
+            'fields': ('display_type', 'display_size', 'display_resolution', 'display_protection')
+        }),
+        ('Platform', {
+            'fields': ('os', 'chipset', 'cpu', 'gpu')
+        }),
+        ('Memory', {
+            'fields': ('card_slot', 'internal_memory', 'ram')
+        }),
+        ('Main Camera', {
+            'fields': ('main_camera', 'camera_features', 'video_capabilities')
+        }),
+        ('Selfie Camera', {
+            'fields': ('selfie_camera', 'selfie_video')
+        }),
+        ('Sound', {
+            'fields': ('speaker', 'jack_3_5mm')
+        }),
+        ('Communication', {
+            'fields': ('wlan', 'bluetooth', 'positioning', 'nfc', 'usb_type')
+        }),
+        ('Features', {
+            'fields': ('sensors', 'fingerprint', 'wifi')
+        }),
+        ('Battery', {
+            'fields': (
+                'battery_type', 'battery_capacity', 'charging', 'fast_charging',
+                'fast_wireless_charging', 'reverse_wireless_charging'
+            )
+        }),
+        ('Miscellaneous', {
+            'fields': (
+                'colors', 'price_range', 'pta_approved', 'five_g_supported',
+                'is_available', 'views'
+            )
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
     inlines = [MobilePhoneImageInline]
     ordering = ['-created_at']
 
 # Laptop Admin
 @admin.register(Laptop)
 class LaptopAdmin(admin.ModelAdmin):
-    list_display = ['name', 'price', 'shop_owner', 'is_available', 'created_at']
-    list_filter = ['is_available', 'os']
-    search_fields = ['name', 'shop_owner__store_name']
+    # Display important fields in the list view
+    list_display = [
+        'name', 'price', 'shop_owner', 'is_available', 
+        'os', 'brand', 'processor', 'screen_size', 'created_at'
+    ]
+    # Add filters for easier navigation
+    list_filter = [
+        'is_available', 'os', 'brand', 'processor_generation', 
+        'storage_type', 'touchscreen'
+    ]
+    # Enable search functionality for relevant fields
+    search_fields = [
+        'name', 'shop_owner__store_name', 'processor', 
+        'graphics_card', 'brand'
+    ]
+    # Prepopulate the slug field based on the name
     prepopulated_fields = {"slug": ("name",)}
+    # Make certain fields read-only
     readonly_fields = ['created_at', 'updated_at']
-    inlines = [LaptopImageInline]
+    # Add inline image functionality if applicable
+    inlines = []  # Replace with your image inline if necessary (e.g., LaptopImageInline)
+    # Set default ordering
     ordering = ['-created_at']
+    # Configure the fieldsets for detailed editing
+    fieldsets = (
+        ("Basic Information", {
+            "fields": ("name", "slug", "shop_owner", "category", "price", "description", "image")
+        }),
+        ("Specifications", {
+            "fields": (
+                "brand", "processor", "processor_generation", "ram", 
+                "storage_type", "storage_size", "graphics_card", 
+                "screen_size", "display_resolution", "refresh_rate", "touchscreen"
+            )
+        }),
+        ("Connectivity & Features", {
+            "fields": ("os", "wifi", "bluetooth", "usb_type_c", "battery_life")
+        }),
+        ("Status & Metadata", {
+            "fields": ("is_available", "views", "created_at", "updated_at")
+        }),
+    )
 
+    inlines = [LaptopImageInline]
 # Accessory Admin
 @admin.register(Accessory)
 class AccessoryAdmin(admin.ModelAdmin):

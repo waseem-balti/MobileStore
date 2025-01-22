@@ -51,12 +51,14 @@ class MobilePhoneForm(forms.ModelForm):
             'wifi', 'is_available'
         ]
 
+
+
 class LaptopForm(forms.ModelForm):
     class Meta:
         model = Laptop
-        fields = ['name', 'price', 'description', 'category', 'shop_owner', 'screen_size', 'operating_system', 
-                  'storage', 'ram', 'processor', 'graphics_card', 'battery_life', 'display', 'os', 'wifi', 'bluetooth', 
-                  'usb_type_c', 'is_available', 'slug', 'brand']
+        fields = '__all__'
+        exclude = ['slug', 'views', 'created_at', 'updated_at']
+
 
 class AccessoryForm(forms.ModelForm):
     class Meta:
@@ -114,14 +116,18 @@ class ReviewForm(forms.ModelForm):
         model = Review
         fields = ['rating', 'review_text']
         widgets = {
-            'rating': forms.RadioSelect,
-            'review_text': forms.Textarea(attrs={'rows': 4}),
+            'rating': forms.RadioSelect(attrs={'class': 'hidden peer'}),
+            'review_text': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'w-full border-2 border-gray-200 rounded-xl p-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none',
+                'placeholder': 'Share your experience with this product...'
+            }),
         }
 
     def clean_review_text(self):
         review_text = self.cleaned_data.get('review_text')
         if len(review_text) < 10:
-            raise forms.ValidationError("Review must be at least 10 characters.")
+            raise forms.ValidationError('Review text must be at least 10 characters long.')
         return review_text
 
 # Transaction Form

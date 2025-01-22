@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
-from django.core.validators import FileExtensionValidator
+from django.core.validators import MinLengthValidator, FileExtensionValidator
 import uuid
 from datetime import datetime, timedelta
 from django.db.models.signals import post_save
@@ -109,6 +109,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name
     
+
 class MobilePhone(models.Model):
     shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="mobile_phones")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="mobile_phones")
@@ -116,9 +117,15 @@ class MobilePhone(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     image = models.ImageField(upload_to='products/phones/', blank=True, null=True)
+    
     # Network Fields
     technology = models.CharField(max_length=255, blank=True, null=True)
     network_bands = models.TextField(blank=True, null=True)
+    network_2g_bands = models.CharField(max_length=255, blank=True, null=True)
+    network_3g_bands = models.CharField(max_length=255, blank=True, null=True)
+    network_4g_bands = models.CharField(max_length=255, blank=True, null=True)
+    network_5g_bands = models.CharField(max_length=255, blank=True, null=True)
+    network_speed = models.CharField(max_length=255, blank=True, null=True)
 
     # Launch Fields
     announcement_date = models.DateTimeField(blank=True, null=True)
@@ -359,35 +366,73 @@ class Accessory(models.Model):
         return f"{self.name} - {self.shop_owner.store_name}"
 
 
+from django.db import models
+from django.utils.text import slugify
+
 class Laptop(models.Model):
+    # Basic Information
     shop_owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name="laptops")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="laptops")
     name = models.CharField(max_length=255)
+    brand = models.CharField(max_length=100, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     image = models.ImageField(upload_to='products/laptops/', blank=True, null=True)
-    # Laptop-specific fields
-    screen_size = models.CharField(max_length=255, blank=True, null=True)
-    operating_system = models.CharField(max_length=255, blank=True, null=True)
-    storage = models.CharField(max_length=255)
-    ram = models.CharField(max_length=255)
-    processor = models.CharField(max_length=255)
-    graphics_card = models.CharField(max_length=255, blank=True, null=True)
-    battery_life = models.CharField(max_length=255)
     
-    # Common specifications (can be shared with MobilePhone model)
-    display = models.CharField(max_length=255)
-    os = models.CharField(max_length=255)
+    # Display
+    screen_size = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)  # e.g., 15.6"
+    display_resolution = models.CharField(max_length=50, blank=True, null=True)  # e.g., 1920x1080
+    display_type = models.CharField(max_length=255, blank=True, null=True)  # e.g., IPS, OLED
+    refresh_rate = models.IntegerField(default=60, blank=True, null=True)  # e.g., 60Hz, 144Hz
+    touchscreen = models.BooleanField(default=False)
+
+    # Performance
+    processor = models.CharField(max_length=100)  # e.g., Intel i7-12700H
+    processor_generation = models.CharField(max_length=50, blank=True, null=True)  # e.g., 12th Gen
+    ram = models.IntegerField()  # in GB
+    storage_type = models.CharField(
+        max_length=50, 
+        choices=[('SSD', 'SSD'), ('HDD', 'HDD'), ('Hybrid', 'Hybrid')],
+        blank=True, 
+        null=True
+    )
+    storage_size = models.IntegerField(blank=True, null=True)  # in GB
+    graphics_card = models.CharField(max_length=100, blank=True, null=True)  # e.g., NVIDIA RTX 3060
+    graphics_memory = models.CharField(max_length=255, blank=True, null=True)  # e.g., 4GB, 6GB
+
+    # Battery
+    battery_life = models.CharField(max_length=255, blank=True, null=True)  # e.g., Up to 8 hours
+    battery_type = models.CharField(max_length=255, blank=True, null=True)  # e.g., Li-ion
+    fast_charging = models.BooleanField(default=False)
+
+    # Connectivity
     wifi = models.BooleanField(default=True)
     bluetooth = models.BooleanField(default=True)
+    usb_ports = models.TextField(blank=True, null=True)  # e.g., 3 x USB 3.2
     usb_type_c = models.BooleanField(default=True)
+    hdmi_port = models.BooleanField(default=True)
+    ethernet_port = models.BooleanField(default=False)
+    headphone_jack = models.BooleanField(default=True)
+    card_reader = models.BooleanField(default=False)
+    thunderbolt_support = models.BooleanField(default=False)
+
+    # Build and Features
+    dimensions = models.CharField(max_length=255, blank=True, null=True)  # e.g., 14.2 x 9.6 x 0.7 inches
+    weight = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)  # in kg
+    material = models.CharField(max_length=255, blank=True, null=True)  # e.g., Aluminum, Plastic
+    color_options = models.TextField(blank=True, null=True)  # e.g., Silver, Black
+    backlit_keyboard = models.BooleanField(default=False)
+    fingerprint_reader = models.BooleanField(default=False)
+    webcam_resolution = models.CharField(max_length=255, blank=True, null=True)  # e.g., 720p
+    audio_features = models.TextField(blank=True, null=True)  # e.g., Dolby Atmos
+
+    # Miscellaneous
+    os = models.CharField(max_length=255, blank=True, null=True)  # e.g., Windows 11
     is_available = models.BooleanField(default=True)
     views = models.PositiveIntegerField(default=0)
-    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(unique=True, blank=True)
-    brand = models.CharField(max_length=255, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -427,7 +472,7 @@ class Review(models.Model):
     mobile_phone = models.ForeignKey(MobilePhone, on_delete=models.CASCADE, related_name="reviews", null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="reviews",  null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    review_text = models.TextField()
+    review_text = models.TextField(validators=[MinLengthValidator(10, message="Review must be at least 10 characters long.")])
     rating = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 6)])
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
