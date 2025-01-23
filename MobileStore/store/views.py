@@ -20,6 +20,11 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Q
+from django.contrib.postgres.search import TrigramSimilarity
+from fuzzywuzzy import fuzz, process
+from difflib import SequenceMatcher
+
+
 
 from .models import (
     MobilePhone,
@@ -832,33 +837,70 @@ def add_review(request, slug):
         return JsonResponse({"success": False, "errors": form.errors})
 
 
+
+
+
+
+def similar(a, b):
+    """Calculate similarity ratio between two strings"""
+    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
 def search(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
+    phones, laptops, accessories = [], [], []
+    SIMILARITY_THRESHOLD = 0.2 if len(query) <= 3 else 0.6 # Adjust this value to control match sensitivity
+
     if query:
-        phones = MobilePhone.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
-        )
-        laptops = Laptop.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
-        )
-        accessories = Accessory.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
-        )
-    else:
-        phones = MobilePhone.objects.none()
-        laptops = Laptop.objects.none()
-        accessories = Accessory.objects.none()
+        # Get all items
+        all_phones = MobilePhone.objects.all()
+        all_laptops = Laptop.objects.all()
+        all_accessories = Accessory.objects.all()
+
+        # Fuzzy search implementation
+        for phone in all_phones:
+            # Check name similarity
+            name_similarity = similar(query, phone.name)
+            # Check description words
+            desc_words = phone.description.split()
+            desc_similarity = max([similar(query, word) for word in desc_words], default=0)
+            
+            if name_similarity > SIMILARITY_THRESHOLD or desc_similarity > SIMILARITY_THRESHOLD:
+                phones.append(phone)
+
+        for laptop in all_laptops:
+            name_similarity = similar(query, laptop.name)
+            desc_words = laptop.description.split()
+            desc_similarity = max([similar(query, word) for word in desc_words], default=0)
+            
+            if name_similarity > SIMILARITY_THRESHOLD or desc_similarity > SIMILARITY_THRESHOLD:
+                laptops.append(laptop)
+
+        for accessory in all_accessories:
+            name_similarity = similar(query, accessory.name)
+            if accessory.description:  # Check if description exists
+                desc_words = accessory.description.split()
+                desc_similarity = max([similar(query, word) for word in desc_words], default=0)
+            else:
+                desc_similarity = 0
+            
+            if name_similarity > SIMILARITY_THRESHOLD or desc_similarity > SIMILARITY_THRESHOLD:
+                accessories.append(accessory)
 
     context = {
         'query': query,
-        'phones': phones,
-        'laptops': laptops,
-        'accessories': accessories,
-        'total_results': phones.count() + laptops.count() + accessories.count(),
+        'results': {
+            'Phone': phones,
+            'Laptop': laptops,
+            'Accessory': accessories,
+        },
+        'total_results': len(phones) + len(laptops) + len(accessories),
     }
     return render(request, 'search_results.html', context)
 
 
+def newsletter_signup(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        # Add logic to handle newsletter signup
+        messages.success(request, 'Successfully subscribed!')
+    return redirect('home')

@@ -51,6 +51,7 @@ urlpatterns = [
     path('cart/add/<str:item_type>/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
     path('accessory/<slug:slug>/add_review/', views.add_review, name='add_review'),
     path('search/', views.search, name='search'),
+    path('newsletter/signup/', views.newsletter_signup, name='newsletter_signup'),
 
     ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
