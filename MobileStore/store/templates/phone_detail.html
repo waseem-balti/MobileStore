@@ -7,55 +7,84 @@
 <!-- Compare Button -->
 <div class="flex justify-end mb-4">
     <button onclick="openCompareModal()" 
-            class="bg-blue-600 text-white py-2 px-4 rounded-lg text-lg font-semibold 
-                   hover:bg-blue-700 transform transition-all duration-300 hover:scale-105 
-                   focus:outline-none focus:ring-4 focus:ring-blue-200 active:scale-95">
-        Compare
+            class="group inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 
+                   text-white py-2.5 px-5 rounded-lg text-lg font-semibold 
+                   hover:from-blue-700 hover:to-blue-800 transform transition-all duration-300 
+                   hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 
+                   focus:ring-blue-200 active:scale-95">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <span>Compare</span>
     </button>
 </div>
 
 <!-- Compare Modal -->
-<div id="compareModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-3xl">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Compare Phones</h2>
+<div id="compareModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 backdrop-blur-sm flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-3xl mx-4">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-900">Compare Phones</h2>
+            <button onclick="closeCompareModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
         <form id="compareForm" method="get" action="{% url 'compare_phones' %}">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label for="phone1" class="block text-lg font-medium text-gray-700 mb-2">Phone 1</label>
-                    <input type="hidden" id="phone1_id" name="phone">
-                    <input type="text" id="phone1" class="w-full border-gray-300 rounded-lg" oninput="searchPhones(this, 'phone1Results')">
-                    <div id="phone1Results" class="absolute bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto hidden"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="relative">
+                    <label for="phone1" class="block text-sm font-medium text-gray-700 mb-2">Phone 1</label>
+                    <div class="relative">
+                        <input type="hidden" id="phone1_id" name="phone">
+                        <input type="text" id="phone1" 
+                               class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg
+                                      focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                                      transition-all duration-200"
+                               oninput="searchPhones(this, 'phone1Results')"
+                               placeholder="Search phone...">
+                        <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <div id="phone1Results" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg max-h-48 overflow-y-auto hidden"></div>
                 </div>
-                <div>
-                    <label for="phone2" class="block text-lg font-medium text-gray-700 mb-2">Phone 2</label>
-                    <input type="hidden" id="phone2_id" name="phone">
-                    <input type="text" id="phone2" class="w-full border-gray-300 rounded-lg" oninput="searchPhones(this, 'phone2Results')">
-                    <div id="phone2Results" class="absolute bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto hidden"></div>
-                </div>
-                <div>
-                    <label for="phone3" class="block text-lg font-medium text-gray-700 mb-2">Phone 3</label>
-                    <input type="hidden" id="phone3_id" name="phone">
-                    <input type="text" id="phone3" class="w-full border-gray-300 rounded-lg" oninput="searchPhones(this, 'phone3Results')">
-                    <div id="phone3Results" class="absolute bg-white border border-gray-300 rounded-lg mt-1 w-full max-h-48 overflow-y-auto hidden"></div>
+
+                <div class="relative">
+                    <label for="phone2" class="block text-sm font-medium text-gray-700 mb-2">Phone 2</label>
+                    <div class="relative">
+                        <input type="hidden" id="phone2_id" name="phone">
+                        <input type="text" id="phone2" 
+                               class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg
+                                      focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                                      transition-all duration-200"
+                               oninput="searchPhones(this, 'phone2Results')"
+                               placeholder="Search phone...">
+                        <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <div id="phone2Results" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg max-h-48 overflow-y-auto hidden"></div>
                 </div>
             </div>
-            <div class="flex justify-end">
+
+            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
                 <button type="button" onclick="closeCompareModal()" 
-                        class="bg-gray-600 text-white py-2 px-4 rounded-lg text-lg font-semibold 
-                               hover:bg-gray-700 transform transition-all duration-300 hover:scale-105 
-                               focus:outline-none focus:ring-4 focus:ring-gray-200 active:scale-95 mr-2">
+                        class="px-5 py-2.5 rounded-lg text-gray-700 bg-gray-100 font-medium
+                               hover:bg-gray-200 transition-all duration-200">
                     Cancel
                 </button>
                 <button type="submit" 
-                        class="bg-blue-600 text-white py-2 px-4 rounded-lg text-lg font-semibold 
-                               hover:bg-blue-700 transform transition-all duration-300 hover:scale-105 
-                               focus:outline-none focus:ring-4 focus:ring-blue-200 active:scale-95">
+                        class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 
+                               text-white font-medium hover:from-blue-700 hover:to-blue-800 
+                               transition-all duration-200 hover:shadow-lg">
                     Compare
                 </button>
             </div>
         </form>
     </div>
-</div>
+</div>        
+        
     <!-- Hero Section -->
     <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
         <div class="flex flex-col lg:flex-row">
@@ -147,282 +176,282 @@
         </div>
     </div>
 
-    <!-- Detailed Specifications -->
-    <div class="mt-12 bg-white rounded-3xl shadow-xl p-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-8">Technical Specifications</h2>
-        
-        <div class="grid grid-cols-1 gap-8">
-            <!-- Network -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Network</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <div class="flex justify-between py-2 border-b">
-                            <span class="text-gray-600">Technology</span>
-                            <span class="font-medium text-gray-900">{{ phone.technology }}</span>
-                        </div>
-                        <div class="flex justify-between py-2 border-b">
-                            <span class="text-gray-600">2G Bands</span>
-                            <span class="font-medium text-gray-900">{{ phone.network_2g_bands }}</span>
-                        </div>
-                        <div class="flex justify-between py-2 border-b">
-                            <span class="text-gray-600">3G Bands</span>
-                            <span class="font-medium text-gray-900">{{ phone.network_3g_bands }}</span>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <div class="flex justify-between py-2 border-b">
-                            <span class="text-gray-600">4G Bands</span>
-                            <span class="font-medium text-gray-900">{{ phone.network_4g_bands }}</span>
-                        </div>
-                        <div class="flex justify-between py-2 border-b">
-                            <span class="text-gray-600">5G Bands</span>
-                            <span class="font-medium text-gray-900">{{ phone.network_5g_bands }}</span>
-                        </div>
-                        <div class="flex justify-between py-2 border-b">
-                            <span class="text-gray-600">Speed</span>
-                            <span class="font-medium text-gray-900">{{ phone.network_speed }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                                            <!-- Detailed Specifications -->
+                                            <div class="mt-12 bg-white rounded-3xl shadow-xl p-8">
+                                                <h2 class="text-3xl font-bold text-gray-900 mb-8">Technical Specifications</h2>
+                                                
+                                                <div class="grid grid-cols-1 gap-8">
+                                                    <!-- Network -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Network</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="space-y-2">
+                                                                <div class="flex justify-between py-2 border-b">
+                                                                    <span class="text-gray-600">Technology</span>
+                                                                    <span class="font-medium text-gray-900">{{ phone.technology }}</span>
+                                                                </div>
+                                                                <div class="flex justify-between py-2 border-b">
+                                                                    <span class="text-gray-600">2G Bands</span>
+                                                                    <span class="font-medium text-gray-900">{{ phone.network_2g_bands }}</span>
+                                                                </div>
+                                                                <div class="flex justify-between py-2 border-b">
+                                                                    <span class="text-gray-600">3G Bands</span>
+                                                                    <span class="font-medium text-gray-900">{{ phone.network_3g_bands }}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="space-y-2">
+                                                                <div class="flex justify-between py-2 border-b">
+                                                                    <span class="text-gray-600">4G Bands</span>
+                                                                    <span class="font-medium text-gray-900">{{ phone.network_4g_bands }}</span>
+                                                                </div>
+                                                                <div class="flex justify-between py-2 border-b">
+                                                                    <span class="text-gray-600">5G Bands</span>
+                                                                    <span class="font-medium text-gray-900">{{ phone.network_5g_bands }}</span>
+                                                                </div>
+                                                                <div class="flex justify-between py-2 border-b">
+                                                                    <span class="text-gray-600">Speed</span>
+                                                                    <span class="font-medium text-gray-900">{{ phone.network_speed }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Launch -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Launch Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Announced</span>
-                        <span class="font-medium text-gray-900">{{ phone.announcement_date|date:"Y, F d" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Status</span>
-                        <span class="font-medium text-gray-900">{{ phone.status }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Launch -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Launch Information</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Announced</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.announcement_date|date:"Y, F d" }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Status</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.status }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Body -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Body</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Dimensions</span>
-                        <span class="font-medium text-gray-900">{{ phone.dimensions }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Weight</span>
-                        <span class="font-medium text-gray-900">{{ phone.weight }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">SIM</span>
-                        <span class="font-medium text-gray-900">{{ phone.sim }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Water Resistance</span>
-                        <span class="font-medium text-gray-900">{{ phone.water_resistant|yesno:"IP68/IP69 dust/water resistant (up to 1.5m for 30 min),Not water resistant" }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Body -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Body</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Dimensions</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.dimensions }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Weight</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.weight }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">SIM</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.sim }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Water Resistance</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.water_resistant|yesno:"IP68/IP69 dust/water resistant (up to 1.5m for 30 min),Not water resistant" }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Display -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Display</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Type</span>
-                        <span class="font-medium text-gray-900">{{ phone.display_type }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Size</span>
-                        <span class="font-medium text-gray-900">{{ phone.display_size }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Resolution</span>
-                        <span class="font-medium text-gray-900">{{ phone.display_resolution }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Display -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Display</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Type</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.display_type }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Size</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.display_size }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Resolution</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.display_resolution }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Platform -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Platform</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">OS</span>
-                        <span class="font-medium text-gray-900">{{ phone.os }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Chipset</span>
-                        <span class="font-medium text-gray-900">{{ phone.chipset }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">CPU</span>
-                        <span class="font-medium text-gray-900">{{ phone.cpu }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">GPU</span>
-                        <span class="font-medium text-gray-900">{{ phone.gpu }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Platform -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Platform</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">OS</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.os }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Chipset</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.chipset }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">CPU</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.cpu }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">GPU</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.gpu }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Memory -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Memory</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Card Slot</span>
-                        <span class="font-medium text-gray-900">{{ phone.card_slot }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Internal</span>
-                        <span class="font-medium text-gray-900">{{ phone.internal_memory }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Memory -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Memory</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Card Slot</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.card_slot }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Internal</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.internal_memory }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Main Camera -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Main Camera</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Setup</span>
-                        <span class="font-medium text-gray-900">{{ phone.main_camera }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Features</span>
-                        <span class="font-medium text-gray-900">{{ phone.camera_features }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Video</span>
-                        <span class="font-medium text-gray-900">{{ phone.video_capabilities }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Main Camera -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Main Camera</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Setup</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.main_camera }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Features</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.camera_features }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Video</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.video_capabilities }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Selfie Camera -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Selfie Camera</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Setup</span>
-                        <span class="font-medium text-gray-900">{{ phone.selfie_camera_features }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Video</span>
-                        <span class="font-medium text-gray-900">{{ phone.selfie_video }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Selfie Camera -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Selfie Camera</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Setup</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.selfie_camera_features }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Video</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.selfie_video }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Sound -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Sound</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Loudspeaker</span>
-                        <span class="font-medium text-gray-900">{{ phone.speaker }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">3.5mm Jack</span>
-                        <span class="font-medium text-gray-900">{{ phone.jack_3_5mm|yesno:"Yes,No" }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Sound -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Sound</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Loudspeaker</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.speaker }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">3.5mm Jack</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.jack_3_5mm|yesno:"Yes,No" }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Communications -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Communications</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">WLAN</span>
-                        <span class="font-medium text-gray-900">{{ phone.wlan }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Bluetooth</span>
-                        <span class="font-medium text-gray-900">{{ phone.bluetooth|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">GPS</span>
-                        <span class="font-medium text-gray-900">{{ phone.positioning }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">NFC</span>
-                        <span class="font-medium text-gray-900">{{ phone.nfc|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Radio</span>
-                        <span class="font-medium text-gray-900">{{ phone.radio|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">USB</span>
-                        <span class="font-medium text-gray-900">{{ phone.usb_type }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Communications -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Communications</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">WLAN</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.wlan }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Bluetooth</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.bluetooth|yesno:"Yes,No" }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">GPS</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.positioning }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">NFC</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.nfc|yesno:"Yes,No" }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Radio</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.radio|yesno:"Yes,No" }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">USB</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.usb_type }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Features -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Features</h3>
-                <div class="grid grid-cols-1 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Sensors</span>
-                        <span class="font-medium text-gray-900">{{ phone.sensors }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Features -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Features</h3>
+                                                        <div class="grid grid-cols-1 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Sensors</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.sensors }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Battery -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Battery</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Type</span>
-                        <span class="font-medium text-gray-900">{{ phone.battery_type }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Charging</span>
-                        <span class="font-medium text-gray-900">{{ phone.charging }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Battery -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Battery</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Type</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.battery_type }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Charging</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.charging }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Misc -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Miscellaneous</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Colors</span>
-                        <span class="font-medium text-gray-900">{{ phone.colors }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Models</span>
-                        <span class="font-medium text-gray-900">{{ phone.models }}</span>
-                    </div>
-                </div>
-            </div>
+                                                    <!-- Misc -->
+                                                    <div class="border-b pb-6">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Miscellaneous</h3>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Colors</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.colors }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between py-2 border-b">
+                                                                <span class="text-gray-600">Models</span>
+                                                                <span class="font-medium text-gray-900">{{ phone.models }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-            <!-- Social Share -->
-            <div class="mt-8">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Share</h3>
-                <div class="flex space-x-4">
-                    <a href="https://www.facebook.com/sharer.php?u={{ request.build_absolute_uri }}" 
-                       target="_blank" 
-                       rel="noopener"
-                       class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        Share on Facebook
-                    </a>
-                    <a href="https://twitter.com/intent/tweet?text={{ phone.name }}&amp;url={{ request.build_absolute_uri }}" 
-                       target="_blank" 
-                       rel="noopener"
-                       class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors">
-                        Share on Twitter
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+                                                    <!-- Social Share -->
+                                                    <div class="mt-8">
+                                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Share</h3>
+                                                        <div class="flex space-x-4">
+                                                            <a href="https://www.facebook.com/sharer.php?u={{ request.build_absolute_uri }}" 
+                                                            target="_blank" 
+                                                            rel="noopener"
+                                                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                                                Share on Facebook
+                                                            </a>
+                                                            <a href="https://twitter.com/intent/tweet?text={{ phone.name }}&amp;url={{ request.build_absolute_uri }}" 
+                                                            target="_blank" 
+                                                            rel="noopener"
+                                                            class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors">
+                                                                Share on Twitter
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
     <!-- Reviews Section -->
     <div class="mt-12 bg-white rounded-3xl shadow-xl p-8">

@@ -909,10 +909,6 @@ def newsletter_signup(request):
 
 
 
-# def compare_phones(request):
-#     phone_ids = request.GET.getlist('phone')
-#     phones = MobilePhone.objects.filter(id__in=phone_ids)
-#     return render(request, 'compare_phones.html', {'phones': phones})
 
 
 def search_phones(request):
@@ -924,7 +920,5 @@ def search_phones(request):
 
 def compare_phones(request):
     phone_ids = request.GET.getlist('phone')
-    print("Received phone IDs:", phone_ids)  # Debugging statement
     phones = MobilePhone.objects.filter(id__in=phone_ids)
-    print("Fetched phones:", phones)  # Debugging statement
     return render(request, 'compare_phones.html', {'phones': phones})
