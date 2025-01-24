@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-center text-gray-900 mb-8">Phone Comparison</h1>
+    <div class="overflow-x-auto shadow-xl rounded-lg">
+        <table class="min-w-full bg-white">
+            <thead class="sticky top-0 z-10">
+                <tr>
+                    <th class="py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-left text-sm font-semibold uppercase tracking-wider rounded-tl-lg">
+                        Specification
+                    </th>
+                    {% for phone in phones %}
+                    <th class="py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-left text-sm font-semibold uppercase tracking-wider {% if forloop.last %}rounded-tr-lg{% endif %}">
+                        {{ phone.name }}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <!-- Basic Information -->
+                <tr class="bg-gradient-to-r from-gray-100 to-gray-50">
+                    <td colspan="{{ phones|length|add:1 }}" class="py-3 px-6 font-semibold text-gray-700">
+                        Basic Information
+                    </td>
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Image</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">
+                        <img src="{{ phone.images.first.image.url }}" 
+                             alt="{{ phone.name }}" 
+                             class="w-48 h-48 object-contain rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300" />
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Price</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">
+                        <span class="inline-block px-4 py-2 bg-green-100 text-green-800 rounded-full font-semibold">
+                            PKR {{ phone.price|intcomma }}
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Hardware Specifications -->
+                <tr class="bg-gradient-to-r from-gray-100 to-gray-50">
+                    <td colspan="{{ phones|length|add:1 }}" class="py-3 px-6 font-semibold text-gray-700">
+                        Hardware Specifications
+                    </td>
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Storage</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">
+                        <span class="inline-block px-3 py-1 rounded-full {% if phone.storage >= 256 %}bg-green-100 text-green-800{% elif phone.storage >= 128 %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ phone.storage }} GB
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">RAM</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">
+                        <span class="inline-block px-3 py-1 rounded-full {% if phone.ram >= 8 %}bg-green-100 text-green-800{% elif phone.ram >= 6 %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ phone.ram }} GB
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">CPU</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">{{ phone.cpu }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">GPU</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">{{ phone.gpu }}</td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Display -->
+                <tr class="bg-gradient-to-r from-gray-100 to-gray-50">
+                    <td colspan="{{ phones|length|add:1 }}" class="py-3 px-6 font-semibold text-gray-700">
+                        Display
+                    </td>
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Display Type</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">{{ phone.display_type }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Size</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">{{ phone.display_size }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Resolution</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">{{ phone.display_resolution }}</td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Camera -->
+                <tr class="bg-gradient-to-r from-gray-100 to-gray-50">
+                    <td colspan="{{ phones|length|add:1 }}" class="py-3 px-6 font-semibold text-gray-700">
+                        Camera
+                    </td>
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Main Camera</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">{{ phone.main_camera }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Selfie Camera</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">{{ phone.selfie_camera_features }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Video</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">{{ phone.video_capabilities }}</td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Battery -->
+                <tr class="bg-gradient-to-r from-gray-100 to-gray-50">
+                    <td colspan="{{ phones|length|add:1 }}" class="py-3 px-6 font-semibold text-gray-700">
+                        Battery & Charging
+                    </td>
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Battery Capacity</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">
+                        <span class="inline-block px-3 py-1 rounded-full {% if phone.battery_capacity >= 5000 %}bg-green-100 text-green-800{% elif phone.battery_capacity >= 4000 %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ phone.battery_capacity }} mAh
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Charging</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">{{ phone.charging }}</td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Additional Features -->
+                <tr class="bg-gradient-to-r from-gray-100 to-gray-50">
+                    <td colspan="{{ phones|length|add:1 }}" class="py-3 px-6 font-semibold text-gray-700">
+                        Additional Features
+                    </td>
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">Fingerprint</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">
+                        <span class="inline-block px-3 py-1 rounded-full {% if phone.fingerprint %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ phone.fingerprint|yesno:"Yes,No" }}
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">NFC</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">
+                        <span class="inline-block px-3 py-1 rounded-full {% if phone.nfc %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ phone.nfc|yesno:"Yes,No" }}
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr class="hover:bg-blue-50 transition-colors duration-200">
+                    <td class="py-4 px-6 font-medium text-gray-700">5G</td>
+                    {% for phone in phones %}
+                    <td class="py-4 px-6">
+                        <span class="inline-block px-3 py-1 rounded-full {% if phone.five_g_supported %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ phone.five_g_supported|yesno:"Yes,No" }}
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Zebra striping for rows */
+    tbody tr:nth-child(even):not([class*="bg-"]) {
+        background-color: rgb(249, 250, 251);
+    }
+    
+    /* Table sticky header */
+    thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+</style>
+{% endblock content %}

@@ -848,7 +848,7 @@ def similar(a, b):
 def search(request):
     query = request.GET.get('q', '').strip()
     phones, laptops, accessories = [], [], []
-    SIMILARITY_THRESHOLD = 0.2 if len(query) <= 3 else 0.6 # Adjust this value to control match sensitivity
+    SIMILARITY_THRESHOLD = 0.4 if len(query) <= 3 else 0.6 # Adjust this value to control match sensitivity
 
     if query:
         # Get all items
@@ -904,3 +904,27 @@ def newsletter_signup(request):
         # Add logic to handle newsletter signup
         messages.success(request, 'Successfully subscribed!')
     return redirect('home')
+
+
+
+
+
+# def compare_phones(request):
+#     phone_ids = request.GET.getlist('phone')
+#     phones = MobilePhone.objects.filter(id__in=phone_ids)
+#     return render(request, 'compare_phones.html', {'phones': phones})
+
+
+def search_phones(request):
+    query = request.GET.get('q', '')
+    phones = MobilePhone.objects.filter(name__icontains=query).values('id', 'name')
+    return JsonResponse(list(phones), safe=False)
+
+
+
+def compare_phones(request):
+    phone_ids = request.GET.getlist('phone')
+    print("Received phone IDs:", phone_ids)  # Debugging statement
+    phones = MobilePhone.objects.filter(id__in=phone_ids)
+    print("Fetched phones:", phones)  # Debugging statement
+    return render(request, 'compare_phones.html', {'phones': phones})

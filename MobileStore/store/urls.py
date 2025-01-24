@@ -52,7 +52,9 @@ urlpatterns = [
     path('accessory/<slug:slug>/add_review/', views.add_review, name='add_review'),
     path('search/', views.search, name='search'),
     path('newsletter/signup/', views.newsletter_signup, name='newsletter_signup'),
-
+    path('phones/<slug:slug>/', views.phone_detail, name='phone_detail'),
+    path('compare/', views.compare_phones, name='compare_phones'),
+    path('search_phones/', views.search_phones, name='search_phones'),
     ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
