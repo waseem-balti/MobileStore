@@ -23,7 +23,7 @@ from django.db.models import Q
 from django.contrib.postgres.search import TrigramSimilarity
 from fuzzywuzzy import fuzz, process
 from difflib import SequenceMatcher
-
+from django.http import Http404
 
 
 from .models import (
@@ -911,14 +911,69 @@ def newsletter_signup(request):
 
 
 
-def search_phones(request):
-    query = request.GET.get('q', '')
-    phones = MobilePhone.objects.filter(name__icontains=query).values('id', 'name')
-    return JsonResponse(list(phones), safe=False)
+
 
 
 
 def compare_phones(request):
+    # Get the list of phone IDs from the request
     phone_ids = request.GET.getlist('phone')
+
+    if not phone_ids:
+        # If no phone IDs are provided, raise a 404 or handle accordingly
+        raise Http404("No phones selected for comparison.")
+
+    # Filter phones based on the provided IDs
     phones = MobilePhone.objects.filter(id__in=phone_ids)
+
+    if not phones.exists():
+        # If no phones match the given IDs, raise a 404 or handle accordingly
+        raise Http404("No matching phones found for comparison.")
+
+    # Render the comparison template with the list of phones
     return render(request, 'compare_phones.html', {'phones': phones})
+
+
+
+def search_phones(request):
+    query = request.GET.get('q', '')
+    phones = MobilePhone.objects.filter(name__icontains=query).prefetch_related('images')
+    data = [{
+        'id': phone.id,
+        'name': phone.name,
+        'price': phone.price,
+        'images': [{'image': img.image.url} for img in phone.images.all()]
+    } for phone in phones]
+    return JsonResponse(data, safe=False)
+
+def search_laptops(request):
+    query = request.GET.get('q', '')
+    laptops = Laptop.objects.filter(name__icontains=query).prefetch_related('images')
+    data = [{
+        'id': laptop.id,
+        'name': laptop.name,
+        'price': laptop.price,
+        'images': [{'image': img.image.url} for img in laptop.images.all()]
+    } for laptop in laptops]
+    return JsonResponse(data, safe=False)
+
+def search_accessories(request):
+    query = request.GET.get('q', '')
+    accessories = Accessory.objects.filter(name__icontains=query).prefetch_related('images')
+    data = [{
+        'id': acc.id,
+        'name': acc.name,
+        'price': acc.price,
+        'images': [{'image': img.image.url} for img in acc.images.all()]
+    } for acc in accessories]
+    return JsonResponse(data, safe=False)
+
+def compare_laptops(request):
+    laptop_ids = request.GET.getlist('laptop')
+    laptops = Laptop.objects.filter(id__in=laptop_ids)
+    return render(request, 'compare_laptops.html', {'laptops': laptops})
+
+def compare_accessories(request):
+    accessory_ids = request.GET.getlist('accessory')
+    accessories = Accessory.objects.filter(id__in=accessory_ids)
+    return render(request, 'compare_accessories.html', {'accessories': accessories})

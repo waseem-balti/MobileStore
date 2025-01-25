@@ -2,6 +2,126 @@
 {% load custom_filters %}
 {% block content %}
     <div class="container mx-auto p-6">
+        <!-- Compare Button -->
+<div class="flex justify-end mb-4">
+    <button onclick="openCompareModal()"
+            class="group inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2.5 px-5 rounded-lg text-lg font-semibold hover:from-blue-700 hover:to-blue-800 transform transition-all duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-200 active:scale-95">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <span>Compare</span>
+    </button>
+</div>
+
+<!-- Compare Modal -->
+<div id="compareModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 backdrop-blur-sm flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-3xl mx-4">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-900">Compare Accessories</h2>
+            <button onclick="closeCompareModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <form id="compareForm" method="get" action="{% url 'compare_accessories' %}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="relative">
+                    <label for="accessory1" class="block text-sm font-medium text-gray-700 mb-2">Accessory 1</label>
+                    <div class="relative">
+                        <input type="hidden" id="accessory1_id" name="accessory">
+                        <input type="text" id="accessory1"
+                               class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                               oninput="searchAccessories(this, 'accessory1Results')"
+                               placeholder="Search accessory...">
+                        <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <div id="accessory1Results" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg max-h-48 overflow-y-auto hidden"></div>
+                </div>
+
+                <div class="relative">
+                    <label for="accessory2" class="block text-sm font-medium text-gray-700 mb-2">Accessory 2</label>
+                    <div class="relative">
+                        <input type="hidden" id="accessory2_id" name="accessory">
+                        <input type="text" id="accessory2"
+                               class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                               oninput="searchAccessories(this, 'accessory2Results')"
+                               placeholder="Search accessory...">
+                        <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <div id="accessory2Results" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg max-h-48 overflow-y-auto hidden"></div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="button" onclick="closeCompareModal()"
+                        class="px-5 py-2.5 rounded-lg text-gray-700 bg-gray-100 font-medium hover:bg-gray-200 transition-all duration-200 mr-3">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200">
+                    Compare
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openCompareModal() {
+    document.getElementById('compareModal').classList.remove('hidden');
+    document.addEventListener('keydown', handleEscKey);
+}
+
+function closeCompareModal() {
+    document.getElementById('compareModal').classList.add('hidden');
+    document.removeEventListener('keydown', handleEscKey);
+}
+
+function handleEscKey(e) {
+    if (e.key === 'Escape') {
+        closeCompareModal();
+    }
+}
+
+function searchAccessories(input, resultContainerId) {
+    const query = input.value;
+    if (query.length < 2) {
+        document.getElementById(resultContainerId).classList.add('hidden');
+        return;
+    }
+
+    fetch(`/search_accessories/?q=${query}`)
+        .then(response => response.json())
+        .then(data => {
+            const resultContainer = document.getElementById(resultContainerId);
+            resultContainer.innerHTML = '';
+            data.forEach(accessory => {
+                const option = document.createElement('div');
+                option.className = 'p-4 hover:bg-gray-50 cursor-pointer flex items-center space-x-3';
+                option.innerHTML = `
+                    <img src="${accessory.image_url}" alt="${accessory.name}" class="w-10 h-10 object-cover rounded">
+                    <div>
+                        <div class="font-medium">${accessory.name}</div>
+                        <div class="text-sm text-gray-500">PKR ${accessory.price}</div>
+                    </div>
+                `;
+                option.onclick = () => {
+                    input.value = accessory.name;
+                    document.getElementById(`${input.id}_id`).value = accessory.id;
+                    resultContainer.classList.add('hidden');
+                };
+                resultContainer.appendChild(option);
+            });
+            resultContainer.classList.remove('hidden');
+        });
+}
+</script>
         <!-- Main Product Card -->
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden transition-shadow hover:shadow-2xl">
             <div class="flex flex-col lg:flex-row">
@@ -277,4 +397,61 @@
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('load', resizeCanvas);
         </script>
+        <script>
+            function openCompareModal() {
+                document.getElementById('compareModal').classList.remove('hidden');
+                document.addEventListener('keydown', handleEscKey);
+            }
+            
+            function closeCompareModal() {
+                document.getElementById('compareModal').classList.add('hidden');
+                document.removeEventListener('keydown', handleEscKey);
+            }
+            
+            function handleEscKey(e) {
+                if (e.key === 'Escape') {
+                    closeCompareModal();
+                }
+            }
+            
+            function searchAccessories(input, resultContainerId) {
+                const query = input.value;
+                if (query.length < 2) {
+                    document.getElementById(resultContainerId).classList.add('hidden');
+                    return;
+                }
+            
+                fetch(`/search_accessories/?q=${query}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const resultContainer = document.getElementById(resultContainerId);
+                        resultContainer.innerHTML = '';
+                        data.forEach(accessory => {
+                            const option = document.createElement('div');
+                            option.className = 'p-4 hover:bg-gray-50 cursor-pointer flex items-center space-x-3';
+                            option.innerHTML = `
+                                <img src="${accessory.images ? accessory.images[0].image : '/static/images/placeholder.png'}" 
+                                     alt="${accessory.name}" 
+                                     class="w-10 h-10 object-cover rounded">
+                                <div>
+                                    <div class="font-medium">${accessory.name}</div>
+                                    <div class="text-sm text-gray-500">
+                                        PKR ${accessory.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                    </div>
+                                </div>
+                            `;
+                            option.onclick = () => {
+                                input.value = accessory.name;
+                                document.getElementById(`${input.id}_id`).value = accessory.id;
+                                resultContainer.classList.add('hidden');
+                            };
+                            resultContainer.appendChild(option);
+                        });
+                        resultContainer.classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching accessories:', error);
+                    });
+            }
+            </script>
     {% endblock content %}

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4">
+        <!-- Comparison Controls -->
+        <div class="bg-white rounded-xl shadow-lg mb-8 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">Compare Laptops</h1>               
+                <div class="flex gap-3">
+                    <button onclick="addLaptopToCompare()" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Add Laptop
+                    </button>
+                </div>
+            </div>
+
+            <!-- Laptop Selection Area -->
+            <div class="grid grid-cols-1 md:grid-cols-{{ laptops|length }} gap-6">
+                {% for laptop in laptops %}
+                <div class="relative">
+                    <div class="absolute -right-3 -top-3 opacity-100 transition-opacity">
+                        <button onclick="removeLaptop({{ laptop.id }})" 
+                                class="p-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <img src="{{ laptop.images.first.image.url }}" 
+                             alt="{{ laptop.name }}" 
+                             class="w-32 h-32 object-contain mx-auto mb-4">
+                        <h3 class="text-center font-semibold text-gray-900">{{ laptop.name }}</h3>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-800 text-white">
+                    <tr>
+                        <th class="py-4 px-6 text-left">Feature</th>
+                        {% for laptop in laptops %}
+                        <th class="py-4 px-6 text-left">{{ laptop.name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <!-- Price -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-6 font-medium text-gray-900">Price</td>
+                        {% for laptop in laptops %}
+                        <td class="py-4 px-6">
+                            <span class="text-lg font-bold text-green-600">
+                                PKR {{ laptop.price|intcomma }}
+                            </span>
+                        </td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Processor -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-6 font-medium text-gray-900">Processor</td>
+                        {% for laptop in laptops %}
+                        <td class="py-4 px-6">{{ laptop.processor }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- RAM -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-6 font-medium text-gray-900">RAM</td>
+                        {% for laptop in laptops %}
+                        <td class="py-4 px-6">{{ laptop.ram }} GB</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Storage -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-6 font-medium text-gray-900">Storage</td>
+                        {% for laptop in laptops %}
+                        <td class="py-4 px-6">{{ laptop.storage }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Display -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-6 font-medium text-gray-900">Display</td>
+                        {% for laptop in laptops %}
+                        <td class="py-4 px-6">{{ laptop.display }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- GPU -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-6 font-medium text-gray-900">Graphics Card</td>
+                        {% for laptop in laptops %}
+                        <td class="py-4 px-6">{{ laptop.graphics_card }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Battery -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-6 font-medium text-gray-900">Battery</td>
+                        {% for laptop in laptops %}
+                        <td class="py-4 px-6">{{ laptop.battery }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Operating System -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-6 font-medium text-gray-900">OS</td>
+                        {% for laptop in laptops %}
+                        <td class="py-4 px-6">{{ laptop.operating_system }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function addLaptopToCompare() {
+    const searchModal = document.createElement('div');
+    searchModal.className = 'fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50';
+    searchModal.innerHTML = `
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Add Laptop to Compare</h3>
+                <button onclick="closeSearchModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <input type="text" 
+                   id="laptopSearchInput"
+                   class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500"
+                   placeholder="Search laptops..."
+                   oninput="searchLaptops(this.value)">
+            <div id="searchResults" class="mt-4 max-h-60 overflow-y-auto divide-y divide-gray-100"></div>
+        </div>
+    `;
+    document.body.appendChild(searchModal);
+
+    // Close on backdrop click
+    searchModal.addEventListener('click', (e) => {
+        if (e.target === searchModal) {
+            closeSearchModal();
+        }
+    });
+
+    // Close on Esc key
+    document.addEventListener('keydown', handleEscKey);
+}
+
+function handleEscKey(e) {
+    if (e.key === 'Escape') {
+        closeSearchModal();
+    }
+}
+
+function closeSearchModal() {
+    const modal = document.querySelector('.fixed.inset-0');
+    if (modal) {
+        document.body.removeChild(modal);
+    }
+    document.removeEventListener('keydown', handleEscKey);
+}
+
+async function searchLaptops(query) {
+    if (query.length < 2) {
+        document.getElementById('searchResults').innerHTML = '';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/search_laptops/?q=${encodeURIComponent(query)}`);
+        const laptops = await response.json();
+        
+        const resultsDiv = document.getElementById('searchResults');
+        resultsDiv.innerHTML = laptops.map(laptop => `
+            <div class="p-4 hover:bg-gray-50 cursor-pointer transition-colors flex items-center space-x-4" 
+                 onclick="selectLaptop('${laptop.id}', '${laptop.name}')">
+                <img src="${laptop.images ? laptop.images[0].image : '/static/images/placeholder.png'}" 
+                     alt="${laptop.name}" 
+                     class="w-12 h-12 object-contain rounded-lg border border-gray-200">
+                <div>
+                    <div class="font-medium text-gray-900">${laptop.name}</div>
+                    <div class="text-sm text-gray-500">
+                        PKR ${laptop.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                    </div>
+                </div>
+                <svg class="w-5 h-5 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error searching laptops:', error);
+    }
+}
+
+function selectLaptop(laptopId) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.append('laptop', laptopId);
+    window.location.href = currentUrl.toString();
+}
+
+function removeLaptop(laptopId) {
+    const currentUrl = new URL(window.location.href);
+    const laptops = currentUrl.searchParams.getAll('laptop');
+    const updatedLaptops = laptops.filter(id => id !== laptopId.toString());
+    
+    currentUrl.searchParams.delete('laptop');
+    updatedLaptops.forEach(id => currentUrl.searchParams.append('laptop', id));
+    
+    window.location.href = currentUrl.toString();
+}
+</script>
+{% endblock content %}

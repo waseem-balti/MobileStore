@@ -55,6 +55,10 @@ urlpatterns = [
     path('phones/<slug:slug>/', views.phone_detail, name='phone_detail'),
     path('compare/', views.compare_phones, name='compare_phones'),
     path('search_phones/', views.search_phones, name='search_phones'),
+    path('compare_laptops/', views.compare_laptops, name='compare_laptops'),
+    path('compare_accessories/', views.compare_accessories, name='compare_accessories'),
+    path('search_laptops/', views.search_laptops, name='search_laptops'),
+    path('search_accessories/', views.search_accessories, name='search_accessories'),
     ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

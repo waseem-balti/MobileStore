@@ -3,347 +3,413 @@
 {% load static %}
 {% load humanize %}
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <!-- Hero Section -->
-    <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
-        <div class="flex flex-col lg:flex-row">
-            <!-- Image Gallery Section -->
-            <div class="lg:w-1/2 p-8 bg-gray-50">
-              <div class="relative aspect-square mb-6">
-                {% if laptop.image %}
-                    <img id="mainImage" 
-                         src="{{ laptop.image.url }}" 
-                         alt="{{ laptop.name }}"
-                         height="500" width="500"
-                         class="w-full h-full object-contain rounded-2xl shadow-lg transition-all duration-500 hover:scale-105"
-                    />
-                {% else %}
-                    <img id="mainImage" 
-                         src="/path/to/default-image.jpg" 
-                         alt="Default Image"
-                         height="500" width="500"
-                         class="w-full h-full object-contain rounded-2xl shadow-lg transition-all duration-500 hover:scale-105"
-                    />
-                {% endif %}
-            </div>
-            
-            </div>
-
-            <!-- Product Details Section -->
-            <div class="lg:w-1/2 p-8 lg:pl-12 flex flex-col">
-                <!-- Header -->
-                <div class="mb-8">
-                    <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ laptop.name }}</h1>
-                    <p class="text-lg text-gray-600">{{ laptop.description }}</p>
-                </div>
-
-                <!-- Price Card -->
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-2xl mb-8">
-                    <div class="flex items-center justify-between">
-                        <span class="text-lg font-medium text-gray-700">Price</span>
-                        <span class="text-3xl font-bold text-green-600">PKR {{ laptop.price|intcomma }}</span>
-                    </div>
-                </div>
-
-                <!-- Add to Cart Button -->
-                <form method="post" action="{% url 'add_to_cart' 'laptop' laptop.id %}" class="mt-auto">
-                    {% csrf_token %}
-                    <button type="submit" 
-                            class="w-full bg-blue-600 text-white py-4 px-8 rounded-xl text-lg font-semibold 
-                                   hover:bg-blue-700 transform transition-all duration-300 hover:scale-105 
-                                   focus:outline-none focus:ring-4 focus:ring-blue-200 active:scale-95">
-                        Add to Cart
+    <div class="container mx-auto px-4 py-8">
+        <!-- Compare Button -->
+        <div class="flex justify-end mb-4">
+            <button onclick="openCompareModal()"
+                    class="group inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2.5 px-5 rounded-lg text-lg font-semibold hover:from-blue-700 hover:to-blue-800 transform transition-all duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-200 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span>Compare</span>
+            </button>
+        </div>
+        <!-- Compare Modal -->
+        <div id="compareModal"
+             class="fixed inset-0 bg-gray-800 bg-opacity-75 backdrop-blur-sm flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-3xl mx-4">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-900">Compare Laptops</h2>
+                    <button onclick="closeCompareModal()"
+                            class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
+                </div>
+                <form id="compareForm" method="get" action="{% url 'compare_laptops' %}">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="relative">
+                            <label for="laptop1" class="block text-sm font-medium text-gray-700 mb-2">Laptop 1</label>
+                            <div class="relative">
+                                <input type="hidden" id="laptop1_id" name="laptop">
+                                <input type="text"
+                                       id="laptop1"
+                                       class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                       oninput="searchLaptops(this, 'laptop1Results')"
+                                       placeholder="Search laptop...">
+                                <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400"
+                                     fill="none"
+                                     stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <div id="laptop1Results"
+                                 class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg max-h-48 overflow-y-auto hidden">
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <label for="laptop2" class="block text-sm font-medium text-gray-700 mb-2">Laptop 2</label>
+                            <div class="relative">
+                                <input type="hidden" id="laptop2_id" name="laptop">
+                                <input type="text"
+                                       id="laptop2"
+                                       class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                       oninput="searchLaptops(this, 'laptop2Results')"
+                                       placeholder="Search laptop...">
+                                <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400"
+                                     fill="none"
+                                     stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <div id="laptop2Results"
+                                 class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg max-h-48 overflow-y-auto hidden">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button"
+                                onclick="closeCompareModal()"
+                                class="px-5 py-2.5 rounded-lg text-gray-700 bg-gray-100 font-medium hover:bg-gray-200 transition-all duration-200 mr-3">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200">
+                            Compare
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
-    </div>
-
-    <!-- Detailed Specifications -->
-    <div class="mt-12 bg-white rounded-3xl shadow-xl p-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-8">Technical Specifications</h2>
-        
-        <div class="grid grid-cols-1 gap-8">
-            <!-- Basic Information -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Basic Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Brand</span>
-                        <span class="font-medium text-gray-900">{{ laptop.brand }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Category</span>
-                        <span class="font-medium text-gray-900">{{ laptop.category.name }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Shop Owner</span>
-                        <span class="font-medium text-gray-900">{{ laptop.shop_owner.store_name }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Display -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Display</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Screen Size</span>
-                        <span class="font-medium text-gray-900">{{ laptop.screen_size }} inches</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Resolution</span>
-                        <span class="font-medium text-gray-900">{{ laptop.display_resolution }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Display Type</span>
-                        <span class="font-medium text-gray-900">{{ laptop.display_type }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Refresh Rate</span>
-                        <span class="font-medium text-gray-900">{{ laptop.refresh_rate }} Hz</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Touchscreen</span>
-                        <span class="font-medium text-gray-900">{{ laptop.touchscreen|yesno:"Yes,No" }}</span>
+        <!-- Hero Section -->
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+            <div class="flex flex-col lg:flex-row">
+                <!-- Image Gallery Section -->
+                <div class="lg:w-1/2 p-8 bg-gray-50">
+                    <div class="relative aspect-square mb-6">
+                        {% if laptop.image %}
+                            <img id="mainImage"
+                                 src="{{ laptop.image.url }}"
+                                 alt="{{ laptop.name }}"
+                                 height="500"
+                                 width="500"
+                                 class="w-full h-full object-contain rounded-2xl shadow-lg transition-all duration-500 hover:scale-105" />
+                        {% else %}
+                            <img id="mainImage"
+                                 src="/path/to/default-image.jpg"
+                                 alt="Default Image"
+                                 height="500"
+                                 width="500"
+                                 class="w-full h-full object-contain rounded-2xl shadow-lg transition-all duration-500 hover:scale-105" />
+                        {% endif %}
                     </div>
                 </div>
-            </div>
-
-            <!-- Performance -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Performance</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Processor</span>
-                        <span class="font-medium text-gray-900">{{ laptop.processor }}</span>
+                <!-- Product Details Section -->
+                <div class="lg:w-1/2 p-8 lg:pl-12 flex flex-col">
+                    <!-- Header -->
+                    <div class="mb-8">
+                        <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ laptop.name }}</h1>
+                        <p class="text-lg text-gray-600">{{ laptop.description }}</p>
                     </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Processor Generation</span>
-                        <span class="font-medium text-gray-900">{{ laptop.processor_generation }}</span>
+                    <!-- Price Card -->
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-2xl mb-8">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium text-gray-700">Price</span>
+                            <span class="text-3xl font-bold text-green-600">PKR {{ laptop.price|intcomma }}</span>
+                        </div>
                     </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">RAM</span>
-                        <span class="font-medium text-gray-900">{{ laptop.ram }} GB</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Storage Type</span>
-                        <span class="font-medium text-gray-900">{{ laptop.storage_type }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Storage Size</span>
-                        <span class="font-medium text-gray-900">{{ laptop.storage_size }} GB</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Graphics Card</span>
-                        <span class="font-medium text-gray-900">{{ laptop.graphics_card }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Graphics Memory</span>
-                        <span class="font-medium text-gray-900">{{ laptop.graphics_memory }}</span>
-                    </div>
+                    <!-- Add to Cart Button -->
+                    <form method="post"
+                          action="{% url 'add_to_cart' 'laptop' laptop.id %}"
+                          class="mt-auto">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="w-full bg-blue-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-blue-700 transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-200 active:scale-95">
+                            Add to Cart
+                        </button>
+                    </form>
                 </div>
             </div>
-
-            <!-- Battery -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Battery</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Battery Life</span>
-                        <span class="font-medium text-gray-900">{{ laptop.battery_life }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Battery Type</span>
-                        <span class="font-medium text-gray-900">{{ laptop.battery_type }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Fast Charging</span>
-                        <span class="font-medium text-gray-900">{{ laptop.fast_charging|yesno:"Yes,No" }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Connectivity -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Connectivity</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">WiFi</span>
-                        <span class="font-medium text-gray-900">{{ laptop.wifi|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Bluetooth</span>
-                        <span class="font-medium text-gray-900">{{ laptop.bluetooth|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">USB Ports</span>
-                        <span class="font-medium text-gray-900">{{ laptop.usb_ports }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">USB Type-C</span>
-                        <span class="font-medium text-gray-900">{{ laptop.usb_type_c|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">HDMI Port</span>
-                        <span class="font-medium text-gray-900">{{ laptop.hdmi_port|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Ethernet Port</span>
-                        <span class="font-medium text-gray-900">{{ laptop.ethernet_port|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Headphone Jack</span>
-                        <span class="font-medium text-gray-900">{{ laptop.headphone_jack|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Card Reader</span>
-                        <span class="font-medium text-gray-900">{{ laptop.card_reader|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Thunderbolt Support</span>
-                        <span class="font-medium text-gray-900">{{ laptop.thunderbolt_support|yesno:"Yes,No" }}</span>
+        </div>
+        <!-- Detailed Specifications -->
+        <div class="mt-12 bg-white rounded-3xl shadow-xl p-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Technical Specifications</h2>
+            <div class="grid grid-cols-1 gap-8">
+                <!-- Basic Information -->
+                <div class="border-b pb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Basic Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Brand</span>
+                            <span class="font-medium text-gray-900">{{ laptop.brand }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Category</span>
+                            <span class="font-medium text-gray-900">{{ laptop.category.name }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Shop Owner</span>
+                            <span class="font-medium text-gray-900">{{ laptop.shop_owner.store_name }}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Build and Features -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Build and Features</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Dimensions</span>
-                        <span class="font-medium text-gray-900">{{ laptop.dimensions }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Weight</span>
-                        <span class="font-medium text-gray-900">{{ laptop.weight }} kg</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Material</span>
-                        <span class="font-medium text-gray-900">{{ laptop.material }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Color Options</span>
-                        <span class="font-medium text-gray-900">{{ laptop.color_options }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Backlit Keyboard</span>
-                        <span class="font-medium text-gray-900">{{ laptop.backlit_keyboard|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Fingerprint Reader</span>
-                        <span class="font-medium text-gray-900">{{ laptop.fingerprint_reader|yesno:"Yes,No" }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Webcam Resolution</span>
-                        <span class="font-medium text-gray-900">{{ laptop.webcam_resolution }}</span>
-                    </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Audio Features</span>
-                        <span class="font-medium text-gray-900">{{ laptop.audio_features }}</span>
+                <!-- Display -->
+                <div class="border-b pb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Display</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Screen Size</span>
+                            <span class="font-medium text-gray-900">{{ laptop.screen_size }} inches</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Resolution</span>
+                            <span class="font-medium text-gray-900">{{ laptop.display_resolution }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Display Type</span>
+                            <span class="font-medium text-gray-900">{{ laptop.display_type }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Refresh Rate</span>
+                            <span class="font-medium text-gray-900">{{ laptop.refresh_rate }} Hz</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Touchscreen</span>
+                            <span class="font-medium text-gray-900">{{ laptop.touchscreen|yesno:"Yes,No" }}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Miscellaneous -->
-            <div class="border-b pb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Miscellaneous</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Operating System</span>
-                        <span class="font-medium text-gray-900">{{ laptop.os }}</span>
+                <!-- Performance -->
+                <div class="border-b pb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Performance</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Processor</span>
+                            <span class="font-medium text-gray-900">{{ laptop.processor }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Processor Generation</span>
+                            <span class="font-medium text-gray-900">{{ laptop.processor_generation }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">RAM</span>
+                            <span class="font-medium text-gray-900">{{ laptop.ram }} GB</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Storage Type</span>
+                            <span class="font-medium text-gray-900">{{ laptop.storage_type }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Storage Size</span>
+                            <span class="font-medium text-gray-900">{{ laptop.storage_size }} GB</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Graphics Card</span>
+                            <span class="font-medium text-gray-900">{{ laptop.graphics_card }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Graphics Memory</span>
+                            <span class="font-medium text-gray-900">{{ laptop.graphics_memory }}</span>
+                        </div>
                     </div>
-                    <div class="flex justify-between py-2 border-b">
-                        <span class="text-gray-600">Availability</span>
-                        <span class="font-medium text-gray-900">{{ laptop.is_available|yesno:"Available,Not Available" }}</span>
+                </div>
+                <!-- Battery -->
+                <div class="border-b pb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Battery</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Battery Life</span>
+                            <span class="font-medium text-gray-900">{{ laptop.battery_life }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Battery Type</span>
+                            <span class="font-medium text-gray-900">{{ laptop.battery_type }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Fast Charging</span>
+                            <span class="font-medium text-gray-900">{{ laptop.fast_charging|yesno:"Yes,No" }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Connectivity -->
+                <div class="border-b pb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Connectivity</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">WiFi</span>
+                            <span class="font-medium text-gray-900">{{ laptop.wifi|yesno:"Yes,No" }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Bluetooth</span>
+                            <span class="font-medium text-gray-900">{{ laptop.bluetooth|yesno:"Yes,No" }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">USB Ports</span>
+                            <span class="font-medium text-gray-900">{{ laptop.usb_ports }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">USB Type-C</span>
+                            <span class="font-medium text-gray-900">{{ laptop.usb_type_c|yesno:"Yes,No" }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">HDMI Port</span>
+                            <span class="font-medium text-gray-900">{{ laptop.hdmi_port|yesno:"Yes,No" }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Ethernet Port</span>
+                            <span class="font-medium text-gray-900">{{ laptop.ethernet_port|yesno:"Yes,No" }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Headphone Jack</span>
+                            <span class="font-medium text-gray-900">{{ laptop.headphone_jack|yesno:"Yes,No" }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Card Reader</span>
+                            <span class="font-medium text-gray-900">{{ laptop.card_reader|yesno:"Yes,No" }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Thunderbolt Support</span>
+                            <span class="font-medium text-gray-900">{{ laptop.thunderbolt_support|yesno:"Yes,No" }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Build and Features -->
+                <div class="border-b pb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Build and Features</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Dimensions</span>
+                            <span class="font-medium text-gray-900">{{ laptop.dimensions }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Weight</span>
+                            <span class="font-medium text-gray-900">{{ laptop.weight }} kg</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Material</span>
+                            <span class="font-medium text-gray-900">{{ laptop.material }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Color Options</span>
+                            <span class="font-medium text-gray-900">{{ laptop.color_options }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Backlit Keyboard</span>
+                            <span class="font-medium text-gray-900">{{ laptop.backlit_keyboard|yesno:"Yes,No" }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Fingerprint Reader</span>
+                            <span class="font-medium text-gray-900">{{ laptop.fingerprint_reader|yesno:"Yes,No" }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Webcam Resolution</span>
+                            <span class="font-medium text-gray-900">{{ laptop.webcam_resolution }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Audio Features</span>
+                            <span class="font-medium text-gray-900">{{ laptop.audio_features }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Miscellaneous -->
+                <div class="border-b pb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Miscellaneous</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Operating System</span>
+                            <span class="font-medium text-gray-900">{{ laptop.os }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b">
+                            <span class="text-gray-600">Availability</span>
+                            <span class="font-medium text-gray-900">{{ laptop.is_available|yesno:"Available,Not Available" }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
     <!-- Reviews Section -->
     <div class="mt-16">
-      <h3 class="text-3xl font-bold mb-8 text-gray-900">Customer Reviews</h3>
-      {% if reviews %}
-        <div class="grid gap-6">
-          {% for review in reviews %}
-            <div class="bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg">
-              <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center space-x-4">
-                  <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <span class="text-xl font-bold text-green-600">{{ review.user.username|make_list|first }}</span>
-                  </div>
-                  <div>
-                    <h4 class="font-semibold text-gray-900">{{ review.user.username }}</h4>
-                    <p class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</p>
-                  </div>
-                </div>
-                <div class="flex">
-                  {% for i in rating_range %}
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         width="20"
-                         height="20"
-                         fill="{% if i <= review.rating %}#FCD34D{% else %}#E5E7EB{% endif %}"
-                         class="mr-1"
-                         viewBox="0 0 16 16">
-                      <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z" />
-                    </svg>
-                  {% endfor %}
-                </div>
-              </div>
-              <p class="text-gray-700 leading-relaxed">{{ review.review_text }}</p>
+        <h3 class="text-3xl font-bold mb-8 text-gray-900">Customer Reviews</h3>
+        {% if reviews %}
+            <div class="grid gap-6">
+                {% for review in reviews %}
+                    <div class="bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <span class="text-xl font-bold text-green-600">{{ review.user.username|make_list|first }}</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">{{ review.user.username }}</h4>
+                                    <p class="text-sm text-gray-500">{{ review.created_at|date:"D M d, Y" }}</p>
+                                </div>
+                            </div>
+                            <div class="flex">
+                                {% for i in rating_range %}
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                         width="20"
+                                         height="20"
+                                         fill="{% if i <= review.rating %}#FCD34D{% else %}#E5E7EB{% endif %}"
+                                         class="mr-1"
+                                         viewBox="0 0 16 16">
+                                        <path d="M3.612 15.443c-.396.217-.878-.115-.786-.545l1.135-4.442L.173 6.545c-.39-.38-.188-1.031.35-1.092l4.511-.335L7.9.473c.216-.611.962-.611 1.178 0l2.285 4.64 4.505.335c.538.061.738.712.348 1.092l-3.788 4.411 1.128 4.442c.092.43-.39.762-.786.545l-4.43-2.586-4.43 2.586z" />
+                                    </svg>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed">{{ review.review_text }}</p>
+                    </div>
+                {% endfor %}
             </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="bg-gray-50 rounded-xl p-8 text-center">
-          <p class="text-gray-600 text-lg">No reviews yet. Be the first to share your experience!</p>
-        </div>
-      {% endif %}
+        {% else %}
+            <div class="bg-gray-50 rounded-xl p-8 text-center">
+                <p class="text-gray-600 text-lg">No reviews yet. Be the first to share your experience!</p>
+            </div>
+        {% endif %}
     </div>
-<!-- Add Review Form -->
-<div class="mt-16 mb-8">
-  <h4 class="text-2xl font-bold mb-6 text-gray-900">Write a Review</h4>
-  <form method="post" class="bg-white rounded-xl shadow-lg p-8">
-      {% csrf_token %}
-      <div class="space-y-6">
-          <div>
-              <label for="rating" class="block text-lg font-medium text-gray-700 mb-4">Rating</label>
-              <div class="flex space-x-4">
-                  {% for i in rating_range %}
-                  <label class="relative">
-                      <input type="radio" name="rating" value="{{ i }}" class="hidden peer" {% if form.rating.value == i %}checked{% endif %}>
-                      <div class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-gray-200 cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50">
-                          <span class="text-xl font-semibold text-gray-700 peer-checked:text-green-600">{{ i }}</span>
-                      </div>
-                  </label>
-                  {% endfor %}
-              </div>
-              {% if form.rating.errors %}
-                  <div class="text-red-500 text-sm mt-1">{{ form.rating.errors }}</div>
-              {% endif %}
-          </div>
-
-          <div>
-              <label for="review_text" class="block text-lg font-medium text-gray-700 mb-2">Your Review</label>
-              {{ form.review_text }}
-              {% if form.review_text.errors %}
-                  <div class="text-red-500 text-sm mt-1">{{ form.review_text.errors }}</div>
-              {% endif %}
-          </div>
-
-          <button type="submit" 
-                  class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
-              Submit Review
-          </button>
-      </div>
-  </form>
-</div>
-
-<!-- JavaScript to update the main image on hover -->
-  <script>
+    <!-- Add Review Form -->
+    <div class="mt-16 mb-8">
+        <h4 class="text-2xl font-bold mb-6 text-gray-900">Write a Review</h4>
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div>
+                    <label for="rating" class="block text-lg font-medium text-gray-700 mb-4">Rating</label>
+                    <div class="flex space-x-4">
+                        {% for i in rating_range %}
+                            <label class="relative">
+                                <input type="radio"
+                                       name="rating"
+                                       value="{{ i }}"
+                                       class="hidden peer"
+                                       {% if form.rating.value == i %}checked{% endif %}>
+                                <div class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-gray-200 cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50">
+                                    <span class="text-xl font-semibold text-gray-700 peer-checked:text-green-600">{{ i }}</span>
+                                </div>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.rating.errors %}<div class="text-red-500 text-sm mt-1">{{ form.rating.errors }}</div>{% endif %}
+                </div>
+                <div>
+                    <label for="review_text"
+                           class="block text-lg font-medium text-gray-700 mb-2">Your Review</label>
+                    {{ form.review_text }}
+                    {% if form.review_text.errors %}<div class="text-red-500 text-sm mt-1">{{ form.review_text.errors }}</div>{% endif %}
+                </div>
+                <button type="submit"
+                        class="w-full bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-green-700 transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-200">
+                    Submit Review
+                </button>
+            </div>
+        </form>
+    </div>
+    <!-- JavaScript to update the main image on hover -->
+    <script>
   function updatePreview(imageUrl) {
     const previewImage = document.getElementById("previewImage");
     previewImage.src = imageUrl;
@@ -358,5 +424,59 @@
   // Initialize preview image transition
   const previewImage = document.getElementById("previewImage");
   previewImage.style.transition = "all 0.3s ease-in-out";
-  </script>
+    </script>
+    <script>
+    function openCompareModal() {
+        document.getElementById('compareModal').classList.remove('hidden');
+        document.addEventListener('keydown', handleEscKey);
+    }
+    
+    function closeCompareModal() {
+        document.getElementById('compareModal').classList.add('hidden');
+        document.removeEventListener('keydown', handleEscKey);
+    }
+    
+    function handleEscKey(e) {
+        if (e.key === 'Escape') {
+            closeCompareModal();
+        }
+    }
+    
+    function searchLaptops(input, resultContainerId) {
+        const query = input.value;
+        if (query.length < 2) {
+            document.getElementById(resultContainerId).classList.add('hidden');
+            return;
+        }
+    
+        fetch(`/search_laptops/?q=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultContainer = document.getElementById(resultContainerId);
+                resultContainer.innerHTML = '';
+                data.forEach(laptop => {
+                    const option = document.createElement('div');
+                    option.className = 'p-4 hover:bg-gray-50 cursor-pointer flex items-center space-x-3';
+                    option.innerHTML = `
+                        <img src="${laptop.images ? laptop.images[0].image : '/static/images/placeholder.png'}" 
+                             alt="${laptop.name}" 
+                             class="w-10 h-10 object-contain rounded">
+                        <div>
+                            <div class="font-medium">${laptop.name}</div>
+                            <div class="text-sm text-gray-500">
+                                PKR ${laptop.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                            </div>
+                        </div>
+                    `;
+                    option.onclick = () => {
+                        input.value = laptop.name;
+                        document.getElementById(`${input.id}_id`).value = laptop.id;
+                        resultContainer.classList.add('hidden');
+                    };
+                    resultContainer.appendChild(option);
+                });
+                resultContainer.classList.remove('hidden');
+            });
+    }
+    </script>
 {% endblock content %}
