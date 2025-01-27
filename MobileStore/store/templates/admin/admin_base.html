@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Dashboard for managing the Mobile Store.">
+    <meta name="keywords" content="admin, dashboard, mobile store, manage, shop owners, customers, products, carts">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-gray-800 text-white py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold">Admin Dashboard</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="{% url 'manage_shop_owners' %}" class="hover:underline">Manage Shop Owners</a></li>
+                    <li><a href="{% url 'manage_customers' %}" class="hover:underline">Manage Customers</a></li>
+                    <li><a href="{% url 'manage_phones' %}" class="hover:underline">Manage Phones</a></li>
+                    <li><a href="{% url 'manage_carts' %}" class="hover:underline">Manage Carts</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        {% block content %}
+        {% endblock content %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-4">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2025 Admin Dashboard. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

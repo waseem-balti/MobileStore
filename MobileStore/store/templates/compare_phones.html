@@ -54,7 +54,8 @@
                     <div class="bg-gray-50 rounded-lg p-4 border-2 border-transparent hover:border-blue-500 transition-all">
                         <img src="{{ phone.images.first.image.url }}" 
                              alt="{{ phone.name }}" 
-                             class="w-32 h-32 object-contain mx-auto mb-4">
+                             class="w-32 h-32 object-contain mx-auto mb-4"
+                             width="128" height="128">
                         <h3 class="text-center font-semibold text-gray-900">{{ phone.name }}</h3>
                     </div>
                 </div>
@@ -199,9 +200,11 @@
                         </tr>
                     </tbody>
                 </table>                
+            </div>
+            </div>
         </div>
     </div>
-    <script>
+            <script>
         function addPhoneToCompare() {
             const searchModal = document.createElement('div');
             searchModal.className = 'fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50';

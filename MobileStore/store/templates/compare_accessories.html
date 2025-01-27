@@ -43,7 +43,8 @@
                     <div class="bg-gray-50 rounded-lg p-4 border-2 border-transparent hover:border-blue-500 transition-all">
                         <img src="{{ accessory.images.first.image.url }}" 
                              alt="{{ accessory.name }}" 
-                             class="w-32 h-32 object-contain mx-auto mb-4">
+                             class="w-32 h-32 object-contain mx-auto mb-4"
+                             width="128" height="128">
                         <h3 class="text-center font-semibold text-gray-900">{{ accessory.name }}</h3>
                     </div>
                 </div>
@@ -267,4 +268,4 @@ function shareComparison() {
     });
 }
 </script>
-{% endblock %}
+{% endblock content %}

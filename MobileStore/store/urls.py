@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -13,6 +13,7 @@ from .views import (
 
 
 urlpatterns = [
+    path("store-admin/", include("store.store_admin.urls")),
     path("", views.index, name="index"),
     path("phone/<slug:slug>/", views.phone_detail, name="phone_detail"),
     path("laptops/", views.laptops, name="laptops"),
